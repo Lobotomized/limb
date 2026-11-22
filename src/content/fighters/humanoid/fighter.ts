@@ -5,41 +5,41 @@ import type { FighterDef, JointDef, MoveDef, PartDef } from '../../../core/schem
  * sits in the middle, a little forward. Two arms (upper arm, forearm, hand) and two
  * short legs under the body (locomotion) that stick out behind and show when turned.
  *
- * Health budget: 800. Mass: ~16.7 kg.
+ * Health budget: 849 (the torso is the root: losing it loses the round, so it carries extra health). Mass: ~16.7 kg.
  * Side convention: "l" parts are on the +y side (the fighter's left when facing +x).
  */
 
 const arm = (s: 'l' | 'r', label: string): PartDef[] => [
   { id: `upper_arm_${s}`, name: `${label} upper arm`, shape: { kind: 'capsule', length: 0.44, radius: 0.075 }, mass: 1.2, maxHealth: 80 },
-  { id: `forearm_${s}`, name: `${label} forearm`, shape: { kind: 'capsule', length: 0.4, radius: 0.068 }, mass: 0.9, maxHealth: 70 },
-  { id: `hand_${s}`, name: `${label} hand`, shape: { kind: 'circle', radius: 0.085 }, mass: 0.55, maxHealth: 50 },
+  { id: `forearm_${s}`, name: `${label} forearm`, shape: { kind: 'capsule', length: 0.4, radius: 0.068 }, mass: 0.9, maxHealth: 80 },
+  { id: `hand_${s}`, name: `${label} hand`, shape: { kind: 'circle', radius: 0.085 }, mass: 0.55, maxHealth: 72 },
 ];
 
 const parts: PartDef[] = [
   {
     id: 'torso',
     name: 'Torso',
-    shape: { kind: 'polygon', points: [[-0.13, -0.42], [0.06, -0.4], [0.1, -0.2], [0.1, 0.2], [0.06, 0.4], [-0.13, 0.42], [-0.17, 0]] },
+    shape: { kind: 'polygon', points: [[-0.13, -0.42], [0.06, -0.4], [0.14, -0.18], [0.14, 0.18], [0.06, 0.4], [-0.13, 0.42], [-0.17, 0]] },
     mass: 6,
-    maxHealth: 160,
+    maxHealth: 205,
     tags: ['armor'],
   },
   { id: 'head', name: 'Head', shape: { kind: 'circle', radius: 0.17 }, mass: 2.5, maxHealth: 100 },
   ...arm('l', 'Left'),
   ...arm('r', 'Right'),
-  { id: 'leg_l', name: 'Left leg', shape: { kind: 'capsule', length: 0.38, radius: 0.08 }, mass: 1.5, maxHealth: 70, tags: ['locomotion'] },
-  { id: 'leg_r', name: 'Right leg', shape: { kind: 'capsule', length: 0.38, radius: 0.08 }, mass: 1.5, maxHealth: 70, tags: ['locomotion'] },
+  { id: 'leg_l', name: 'Left leg', shape: { kind: 'capsule', length: 0.38, radius: 0.08 }, mass: 1.5, maxHealth: 40, tags: ['locomotion'] },
+  { id: 'leg_r', name: 'Right leg', shape: { kind: 'capsule', length: 0.38, radius: 0.08 }, mass: 1.5, maxHealth: 40, tags: ['locomotion'] },
 ];
 
 // sign: +1 for the left arm (+y side), -1 for the right arm. Positive angles rotate toward +y.
 const armJoints = (s: 'l' | 'r', sign: number): JointDef[] => [
-  { id: `shoulder_${s}`, parent: 'torso', child: `upper_arm_${s}`, anchorParent: [0, 0.4 * sign], anchorChild: [-0.18, 0], limits: sign > 0 ? [-1.3, 2.2] : [-2.2, 1.3], strength: 95, damping: 6, idleAngle: 0.35 * sign },
-  { id: `elbow_${s}`, parent: `upper_arm_${s}`, child: `forearm_${s}`, anchorParent: [0.18, 0], anchorChild: [-0.16, 0], limits: sign > 0 ? [-2.5, 0.15] : [-0.15, 2.5], strength: 65, damping: 4, idleAngle: -1.15 * sign },
+  { id: `shoulder_${s}`, parent: 'torso', child: `upper_arm_${s}`, anchorParent: [0, 0.4 * sign], anchorChild: [-0.18, 0], limits: sign > 0 ? [-1.3, 2.2] : [-2.2, 1.3], strength: 110, damping: 6, idleAngle: 0.35 * sign },
+  { id: `elbow_${s}`, parent: `upper_arm_${s}`, child: `forearm_${s}`, anchorParent: [0.18, 0], anchorChild: [-0.16, 0], limits: sign > 0 ? [-2.5, 0.15] : [-0.15, 2.5], strength: 75, damping: 4, idleAngle: -1.15 * sign },
   { id: `wrist_${s}`, parent: `forearm_${s}`, child: `hand_${s}`, anchorParent: [0.17, 0], anchorChild: [-0.05, 0], limits: [-0.6, 0.6], strength: 22, damping: 1.2, idleAngle: 0 },
 ];
 
 const joints: JointDef[] = [
-  { id: 'neck', parent: 'torso', child: 'head', anchorParent: [0.07, 0], anchorChild: [0, 0], limits: [-0.5, 0.5], strength: 40, damping: 3, idleAngle: 0 },
+  { id: 'neck', parent: 'torso', child: 'head', anchorParent: [-0.01, 0], anchorChild: [0, 0], limits: [-0.5, 0.5], strength: 40, damping: 3, idleAngle: 0 },
   ...armJoints('l', 1),
   ...armJoints('r', -1),
   // Legs hang from the hips and trail behind the torso (pivot at the leg's front end).
@@ -101,5 +101,5 @@ export const fighter: FighterDef = {
     { id: 4, name: 'Legs', parts: ['leg_l', 'leg_r'] },
   ],
   moves,
-  locomotion: { walkSpeed: 4.2, walkForce: 260, turnSpeed: 7, turnTorque: 45, dashImpulse: 70 },
+  locomotion: { walkSpeed: 4.5, walkForce: 280, turnSpeed: 7, turnTorque: 45, dashImpulse: 70 },
 };

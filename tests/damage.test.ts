@@ -13,7 +13,7 @@ describe('damage rule', () => {
     expect(reducedMass(2, 5)).toBeCloseTo(10 / 7, 12);
     expect(reducedMass(3, null)).toBe(3);
     expect(damageFromImpact(T.impactThreshold, T)).toBe(0);
-    expect(damageFromImpact(T.impactThreshold + 10, T)).toBe(Math.round(T.damageScale * 10));
+    expect(damageFromImpact(T.impactThreshold + 2, T)).toBe(Math.min(T.maxHitDamage, Math.round(T.damageScale * 2)));
     expect(damageFromImpact(1e6, T)).toBe(T.maxHitDamage);
     const a = { x: 0, y: 0, vx: 5, vy: 0, w: 0 };
     const b = { x: 1, y: 0, vx: -3, vy: 0, w: 0 };
@@ -47,7 +47,9 @@ describe('damage rule', () => {
 
   it('gentle touches deal nothing', () => {
     const s = ballMatch(2, 2);
-    place(s, 0, -1, 0, 1, 0);
+    // reduced mass 1 kg * 0.5 m/s = 0.5 impact, below the threshold.
+    expect(0.5).toBeLessThan(T.impactThreshold);
+    place(s, 0, -1, 0, 0.5, 0);
     place(s, 1, 0, 0, 0, 0);
     expect(hits(idle(s, 60))).toEqual([]);
     expect(s.game.fighters[1]!.parts[0]!.health).toBe(1000);
@@ -60,8 +62,10 @@ describe('damage rule', () => {
       place(s, 1, 0, 0, 0, 0);
       return hits(idle(s, 40))[0]?.damage ?? 0;
     };
-    expect(dmg(2, 10)).toBeGreaterThan(dmg(2, 7));
-    expect(dmg(4, 7)).toBeGreaterThan(dmg(2, 7));
+    // Speeds/masses chosen to stay under the per-hit cap.
+    expect(dmg(2, 3)).toBeGreaterThan(dmg(2, 2));
+    expect(dmg(4, 2)).toBeGreaterThan(dmg(2, 2));
+    expect(dmg(2, 3)).toBeLessThan(T.maxHitDamage);
   });
 
   it('the same pair cannot deal damage again within the cooldown', () => {

@@ -7,15 +7,15 @@ export const TUNING = {
 
   // ---- damage (core/damage.ts)
   /** Damage per unit of impact above the threshold. impact = closingSpeed (m/s) * reducedMass (kg). */
-  damageScale: 1.6,
+  damageScale: 11,
   /** Impacts at or below this deal nothing (gentle touches). */
-  impactThreshold: 4,
+  impactThreshold: 0.8,
   /** Cap on a single hit's damage. */
   maxHitDamage: 45,
   /** Ticks before the same part pair (or part-wall pair) can deal damage again. */
   pairCooldownTicks: 9,
   /** Multiplier on wall hits (impact uses the part's own mass). */
-  wallDamageScale: 1.0,
+  wallDamageScale: 0.5,
 
   // ---- hit-stop (core/match.ts)
   /** Damage of a "big hit" (used by hit-stop and every presentation effect scale). */

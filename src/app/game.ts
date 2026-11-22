@@ -13,6 +13,8 @@ import { COLOR, hex, uiScale } from '../render/theme';
 import { getFighter } from '../registry/fighters';
 import { getArena } from '../registry/arenas';
 import { LocalDriver } from './drivers';
+import { createBot } from '../bots/bot';
+import type { DifficultyId } from '../bots/difficulty';
 
 export async function startGame(host: HTMLElement): Promise<void> {
   document.body.style.background = COLOR.bg900;
@@ -26,7 +28,9 @@ export async function startGame(host: HTMLElement): Promise<void> {
   app.stage.addChild(view.root);
   const params = new URLSearchParams(location.search);
   const sim = createMatch({ fighters: [getFighter(params.get('p1') ?? 'humanoid').def, getFighter(params.get('p2') ?? 'humanoid').def], arena: getArena(), seed: 1 });
-  const driver = new LocalDriver(sim, [() => devices.readLocal(0, 'auto'), () => devices.readLocal(1, 'auto')]);
+  const botLevel = params.get('bot') as DifficultyId | null;
+  const bot = botLevel ? createBot(sim, 1, botLevel, 1) : null;
+  const driver = new LocalDriver(sim, [() => (bot ? devices.readSolo() : devices.readLocal(0, 'auto')), (s) => (bot ? bot.input(s) : devices.readLocal(1, 'auto'))]);
   view.setMatch(sim.ctx);
   const loop = new FixedTickLoop(60);
   let last = performance.now();

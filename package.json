@@ -38,6 +38,7 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "sim:bots": "vite-node tools/sim-bots.ts --",
     "sim:determinism": "vite-node tools/sim-determinism.ts --",
-    "sim:net": "vite-node tools/sim-net.ts --"
+    "sim:net": "vite-node tools/sim-net.ts --",
+    "sim:parts": "vite-node tools/sim-parts.ts --"
   }
 }

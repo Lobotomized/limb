@@ -24,3 +24,23 @@ One line each: decision — why.
 - Inputs during hit-stop are not lost: held buttons register when the freeze ends (presses and releases fully inside a freeze are dropped) — freezes are ≤ 6 ticks except core death.
 - Debris is also removed as soon as it leaves the arena bounds (any side) — walls contain it otherwise.
 - Draws (both cores in the same tick) keep the round number and replay the round.
+- Damage constants retuned from measured impacts (typical limb impacts are 0.5–2, peaks ~20): `impactThreshold` 0.8, `damageScale` 11, `wallDamageScale` 0.5 — the first guesses (threshold 4) filtered out almost every real hit.
+- Bots ram (charge + dash body-first) when they have no usable attack, or when the opponent's health hasn't dropped for 15 s — breaks stalemates (e.g. two clawless crabs) without special cases.
+- Hard bots strafe toward the opponent's weakest attached part — generic way to go for weak spots like the crab's back plate.
+- Bots score spin moves as a ring around the root (×0.7 value) rather than a single strike point — spins hit all around.
+- Mirror matches are reported as P1-side vs P2-side win rates in `sim:bots` — "fighter a vs fighter a" is meaningless otherwise.
+- The humanoid torso carries extra health (205) — it is the root, so losing it detaches the head and loses the round.
+- Crab health budget is lower (~690) — its tankiness comes from heavy armor mass and the enclosed core, not raw health.
+
+## Balance pass 1 (hard bots, 50 matches per pairing, seeds 1..50, sides alternate)
+
+| Matchup | A wins | B wins | Timeouts (6 min) | Draw rounds | Avg round |
+| --- | --- | --- | --- | --- | --- |
+| crab mirror (P1/P2) | 48% | 52% | 0 | 80 | 19.3 s |
+| crab vs humanoid | 62% | 38% | 0 | 24 | 14.0 s |
+| crab vs octopus | 44% | 56% | 0 | 51 | 25.0 s |
+| humanoid mirror (P1/P2) | 52% | 48% | 0 | 62 | 15.0 s |
+| humanoid vs octopus | 62% | 38% | 0 | 28 | 23.5 s |
+| octopus mirror (P1/P2) | 40% | 44% | 8 | 42 | 70.8 s |
+
+Known balancing issue left for the human: octopus mirrors are long (mantle-on-mantle hits deal equal damage, so both cores often die the same tick → replayed draw rounds). Easy/medium bots are less balanced than hard (humanoid–octopus swings strongly by difficulty).

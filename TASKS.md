@@ -39,9 +39,9 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 22. Crab
 
 ## Phase 8: Bots
-- [ ] 23. Bot brain, difficulty, hints
-- [ ] 24. sim:bots tool
-- [ ] 25. First balance pass
+- [x] 23. Bot brain, difficulty, hints
+- [x] 24. sim:bots tool
+- [x] 25. First balance pass
 
 ## Phase 9: Visuals
 - [ ] 26. theme.ts

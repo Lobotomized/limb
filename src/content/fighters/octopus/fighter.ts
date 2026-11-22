@@ -5,26 +5,26 @@ import type { FighterDef, JointDef, MoveDef, PartDef } from '../../../core/schem
  * 3 segments radiating all around. Light, fast, weak joints, low health per segment.
  * No blind side, but the core is big.
  *
- * Health budget: 800 (mantle 200 + 24 segments x 25). Mass: ~11.6 kg.
+ * Health budget: 814 (mantle 310 + 24 segments x 21). Mass: ~14 kg.
  * Tentacles are numbered 0..7 counter-clockwise starting at +22.5° (front-left).
  */
 
 // Base angle (rad) and anchor on the mantle for each tentacle (precomputed: no trig in content).
 const TENTACLES: { angle: number; anchor: [number, number]; label: string }[] = [
-  { angle: 0.3927, anchor: [0.3511, 0.1454], label: 'Front left' },
-  { angle: 1.1781, anchor: [0.1454, 0.3511], label: 'Side left' },
-  { angle: 1.9635, anchor: [-0.1454, 0.3511], label: 'Flank left' },
-  { angle: 2.7489, anchor: [-0.3511, 0.1454], label: 'Rear left' },
-  { angle: -2.7489, anchor: [-0.3511, -0.1454], label: 'Rear right' },
-  { angle: -1.9635, anchor: [-0.1454, -0.3511], label: 'Flank right' },
-  { angle: -1.1781, anchor: [0.1454, -0.3511], label: 'Side right' },
-  { angle: -0.3927, anchor: [0.3511, -0.1454], label: 'Front right' },
+  { angle: 0.3927, anchor: [0.2772, 0.1148], label: 'Front left' },
+  { angle: 1.1781, anchor: [0.1148, 0.2772], label: 'Side left' },
+  { angle: 1.9635, anchor: [-0.1148, 0.2772], label: 'Flank left' },
+  { angle: 2.7489, anchor: [-0.2772, 0.1148], label: 'Rear left' },
+  { angle: -2.7489, anchor: [-0.2772, -0.1148], label: 'Rear right' },
+  { angle: -1.9635, anchor: [-0.1148, -0.2772], label: 'Flank right' },
+  { angle: -1.1781, anchor: [0.1148, -0.2772], label: 'Side right' },
+  { angle: -0.3927, anchor: [0.2772, -0.1148], label: 'Front right' },
 ];
 
 const SEG = [
-  { len: 0.32, r: 0.07, mass: 0.35, hp: 25, strength: 34, damping: 1.6, name: 'base' },
-  { len: 0.28, r: 0.06, mass: 0.28, hp: 25, strength: 20, damping: 1.0, name: 'mid' },
-  { len: 0.25, r: 0.05, mass: 0.2, hp: 25, strength: 11, damping: 0.6, name: 'tip' },
+  { len: 0.32, r: 0.07, mass: 0.48, hp: 21, strength: 60, damping: 2.0, name: 'base' },
+  { len: 0.28, r: 0.06, mass: 0.38, hp: 21, strength: 35, damping: 1.2, name: 'mid' },
+  { len: 0.25, r: 0.05, mass: 0.27, hp: 21, strength: 19, damping: 0.8, name: 'tip' },
 ];
 
 const seg = (t: number, s: number): string => `t${t}_${SEG[s]!.name}`;
@@ -32,7 +32,7 @@ const joint = (t: number, s: number): string => `j${t}_${s}`;
 const clampAngle = (a: number): number => Math.max(-3.09, Math.min(3.09, a));
 
 const parts: PartDef[] = [
-  { id: 'mantle', name: 'Mantle', shape: { kind: 'circle', radius: 0.42 }, mass: 5, maxHealth: 200 },
+  { id: 'mantle', name: 'Mantle', shape: { kind: 'circle', radius: 0.34 }, mass: 5, maxHealth: 310 },
   ...TENTACLES.flatMap((t, ti) =>
     SEG.map((s, si) => ({
       id: seg(ti, si),
@@ -93,8 +93,8 @@ const moves: MoveDef[] = [
   // ---- slot 4: all tentacles
   { slot: 4, direction: 'neutral', name: 'Spread', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'] },
   { slot: 4, direction: 'back', name: 'Curl guard', targets: pose(ALL, (t) => A(t), (t) => -1.3 * side(t)), speed: 12, returnSpeed: 9, requires: ['mantle'] },
-  { slot: 4, direction: 'up', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: 12 },
-  { slot: 4, direction: 'down', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: -12 },
+  { slot: 4, direction: 'up', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: 10 },
+  { slot: 4, direction: 'down', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: -10 },
 ];
 
 const tentacleParts = (ts: number[]): string[] => ts.flatMap((t) => [0, 1, 2].map((s) => seg(t, s)));
@@ -114,5 +114,5 @@ export const fighter: FighterDef = {
     { id: 4, name: 'All tentacles', parts: tentacleParts(ALL) },
   ],
   moves,
-  locomotion: { walkSpeed: 5, walkForce: 200, turnSpeed: 9, turnTorque: 30, dashImpulse: 70 },
+  locomotion: { walkSpeed: 5.6, walkForce: 260, turnSpeed: 9, turnTorque: 36, dashImpulse: 85 },
 };

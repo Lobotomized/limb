@@ -22,6 +22,11 @@ export function fighterDamping(cf: CompiledFighter, t: Tuning): { linear: number
 
 /** World pose of every part in the idle pose, given the root pose. */
 export function idlePoses(cf: CompiledFighter, x: number, y: number, angle: number): { x: number; y: number; angle: number }[] {
+  return posesFor(cf, x, y, angle, cf.def.joints.map((j) => j.idleAngle));
+}
+
+/** Forward kinematics: world pose of every part for the given relative joint angles. */
+export function posesFor(cf: CompiledFighter, x: number, y: number, angle: number, jointAngles: readonly number[]): { x: number; y: number; angle: number }[] {
   const poses: { x: number; y: number; angle: number }[] = cf.def.parts.map(() => ({ x: 0, y: 0, angle: 0 }));
   poses[cf.root] = { x, y, angle };
   for (const p of cf.bfsOrder) {
@@ -29,7 +34,7 @@ export function idlePoses(cf: CompiledFighter, x: number, y: number, angle: numb
     const ji = cf.parentJoint[p] as number;
     const j = cf.def.joints[ji]!;
     const parent = poses[cf.parentPart[p] as number]!;
-    const childAngle = parent.angle + j.idleAngle;
+    const childAngle = parent.angle + (jointAngles[ji] ?? j.idleAngle);
     const anchorWorld: Vec2 = vadd({ x: parent.x, y: parent.y }, vrotate({ x: j.anchorParent[0], y: j.anchorParent[1] }, parent.angle));
     const offset = vrotate({ x: j.anchorChild[0], y: j.anchorChild[1] }, childAngle);
     poses[p] = { x: anchorWorld.x - offset.x, y: anchorWorld.y - offset.y, angle: childAngle };
