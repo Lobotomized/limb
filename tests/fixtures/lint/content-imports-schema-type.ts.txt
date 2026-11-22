@@ -1,0 +1,3 @@
+// Fixture: allowed - a type-only import from core/schema.
+import type { FighterDef } from '../../../core/schema/fighter-schema';
+export const def: Partial<FighterDef> = {};

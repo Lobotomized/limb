@@ -1,0 +1,3 @@
+// Fixture: content may import only TYPES from core/schema, never core logic.
+import { step } from '../../../core/simulation';
+export const x = step;

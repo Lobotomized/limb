@@ -1,0 +1,4 @@
+// Fixture: deterministic code must not use Math.random.
+export function roll(): number {
+  return Math.random();
+}

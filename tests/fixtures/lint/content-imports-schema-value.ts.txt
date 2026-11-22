@@ -1,0 +1,3 @@
+// Fixture: a VALUE import from core/schema is core logic and must fail.
+import { validateFighter } from '../../../core/schema/validate';
+export const v = validateFighter;

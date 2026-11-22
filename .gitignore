@@ -1,0 +1,7 @@
+node_modules
+dist
+release
+*.log
+desync-reports
+.vite
+test-results

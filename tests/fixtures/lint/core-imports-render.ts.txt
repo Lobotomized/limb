@@ -1,0 +1,2 @@
+import { THEME } from '../render/theme';
+export const t = THEME;
