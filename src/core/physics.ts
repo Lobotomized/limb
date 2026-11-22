@@ -85,6 +85,8 @@ export interface PartBodyOptions {
 
 export interface MotorSettings {
   target: number;
+  /** Velocity the target is moving at (rad/s); damping acts relative to it. */
+  targetVel: number;
   stiffness: number;
   damping: number;
   maxForce: number;
@@ -178,7 +180,7 @@ export class PhysicsWorld {
 
   setMotor(joint: number, m: MotorSettings): void {
     const j = this.world.getImpulseJoint(joint) as RAPIER.RevoluteImpulseJoint;
-    j.configureMotorPosition(m.target, m.stiffness, m.damping);
+    j.configureMotor(m.target, m.targetVel, m.stiffness, m.damping);
     j.setMotorMaxForce(m.maxForce);
   }
 

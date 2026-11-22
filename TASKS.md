@@ -15,11 +15,11 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 8. simulation.ts step(state, inputs)
 
 ## Phase 3: Fighters
-- [ ] 9. Schema, validator, auto-discovery loader
-- [ ] 10. fighter.ts build/health/detachment
-- [ ] 11. moves.ts
-- [ ] 12. locomotion.ts
-- [ ] 13. Humanoid fighter
+- [x] 9. Schema, validator, auto-discovery loader
+- [x] 10. fighter.ts build/health/detachment
+- [x] 11. moves.ts
+- [x] 12. locomotion.ts
+- [x] 13. Humanoid fighter
 
 ## Phase 4: Combat rules
 - [ ] 14. damage.ts + tuning.ts

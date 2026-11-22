@@ -114,10 +114,12 @@ export function updateJoints(s: SimState, fi: number): void {
   f.joints.forEach((j, ji) => {
     if (j.handle < 0) return;
     if (f.parts[cf.jointChild[ji] as number]!.status !== 'attached') return;
+    const before = j.commanded;
     j.commanded = approach(j.commanded, j.goal, j.speed * dt);
     const jd = def.joints[ji]!;
     s.physics.setMotor(j.handle, {
       target: j.commanded,
+      targetVel: (j.commanded - before) / dt,
       stiffness: jd.strength * t.motorStiffnessPerStrength,
       damping: jd.damping,
       maxForce: jd.strength,
