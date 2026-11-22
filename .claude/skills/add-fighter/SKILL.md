@@ -31,7 +31,11 @@ validation, HUD body diagram, fighter-select preview, move list and bot support 
    - Optional `spin` (rad/s) on a move makes the root spin while it is held.
    - No `Math.sin/cos` in content (lint): precompute coordinates (see the crab/octopus files).
 3. **Health budget**: total `maxHealth` ≈ 800 (humanoid 849, octopus 784, crab ~690 + heavy armor).
-   Remember equal damage: a part's health is what it can *trade*. Core health vs. the opponent's
+   Remember equal damage: a part's health is what it can *trade*. Each part's max health also sets
+   its **toughness tier** (`TOUGHNESS` in `src/render/theme.ts`: ≤ 40 fragile, 41–99 medium, ≥ 100
+   tough), shown automatically as outline weight in the arena (thin / normal / double), as HP labels
+   and a tier list on fighter select, and as bar length in the detailed HUD. Name mirrored parts
+   "Left …"/"Right …" so the tier list can group them. Core health vs. the opponent's
    limb pool decides fights; a root that is not the core needs extra health.
 4. **Optional `bot.ts`** exporting `botHints: FighterBotHints` — `attackMoves`/`guardMoves` by move
    name, `idealDistance` (m, root to enemy core), `reach`, `shieldParts` (presented toward the enemy).

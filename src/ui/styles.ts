@@ -2,7 +2,7 @@
  * The UI stylesheet, generated from theme tokens (no literals here either). Every size is
  * multiplied by --u, the UI scale (window height / 1080 x the user's UI scale setting).
  */
-import { COLOR, FONT, HUD, LAYOUT, MENU, OPACITY, RADIUS, SHADOW, SPACE, STROKE, TYPE, type TypeStyle } from '../render/theme';
+import { COLOR, FONT, HUD, LAYOUT, MENU, TOUGHNESS, OPACITY, RADIUS, SHADOW, SPACE, STROKE, TYPE, type TypeStyle } from '../render/theme';
 
 const u = (n: number): string => `calc(var(--u) * ${n}px)`;
 
@@ -66,6 +66,9 @@ export function buildStylesheet(): string {
 .movelist { display: grid; grid-template-columns: auto 1fr; column-gap: ${u(SPACE[4])}; row-gap: ${u(SPACE[1])}; ${type(TYPE.caption)} }
 .movelist .slot { color: ${COLOR.inkMuted}; }
 .movelist .disabled { opacity: ${OPACITY.disabled}; }
+.toughness { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; }
+.toughness-row { display: grid; grid-template-columns: ${u(TOUGHNESS.legendSwatch * 2)} ${u(LAYOUT.toughnessLabelWidth)} 1fr; gap: ${u(SPACE[3])}; align-items: center; }
+.toughness-row .swatch { width: ${u(TOUGHNESS.legendSwatch * 2)}; height: ${u(TOUGHNESS.legendSwatch)}; color: ${COLOR.ink}; }
 .stats { ${type(TYPE.caption)} color: ${COLOR.inkMuted}; display: grid; grid-template-columns: auto auto; column-gap: ${u(SPACE[4])}; }
 
 /* ---------------------------------------------------------------- HUD */
@@ -86,9 +89,11 @@ export function buildStylesheet(): string {
 .net-status { position: absolute; bottom: ${u(SPACE[4])}; right: ${u(SPACE[6])}; ${type(TYPE.caption)} color: ${COLOR.inkMuted}; }
 .net-alert { position: absolute; bottom: ${u(SPACE[12])}; left: 50%; transform: translateX(-50%); ${type(TYPE.hudLabel)} color: ${COLOR.danger}; background: ${COLOR.bg800}; padding: ${u(SPACE[2])} ${u(SPACE[4])}; border-radius: ${u(RADIUS.sm)}; }
 .bars { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; }
-.bar-row { display: grid; grid-template-columns: ${u(LAYOUT.barLabelWidth)} 1fr; gap: ${u(SPACE[2])}; align-items: center; }
+.bar-row { display: grid; grid-template-columns: ${u(LAYOUT.barLabelWidth)} minmax(0, ${u(TOUGHNESS.barMaxWidth)}) ${u(LAYOUT.barValueWidth)}; gap: ${u(SPACE[2])}; align-items: center; }
 .bar-row .name { ${type(TYPE.hudLabel)} color: ${COLOR.inkMuted}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: ${u(LAYOUT.barLabelSize)}; }
 .bar-row.lost .name { text-decoration: line-through; color: ${COLOR.inkFaint}; }
+.bar-row .value { ${type(TYPE.caption)} color: ${COLOR.inkMuted}; text-align: right; font-variant-numeric: tabular-nums; }
+.bar-row .track { display: flex; }
 .bar { height: ${u(HUD.barHeight)}; background: ${COLOR.healthTrack}; border-radius: ${u(RADIUS.sm)}; overflow: hidden; }
 .bar.lost { background: transparent; border: ${u(STROKE.hairline)} dashed ${COLOR.inkFaint}; }
 .bar .fill { height: 100%; transition: width ${HUD.barAnimMs}ms linear; }

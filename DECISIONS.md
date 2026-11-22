@@ -66,6 +66,9 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - `npm run dist` builds for the current OS only (AppImage + unpacked dir on Linux, NSIS on Windows, DMG on macOS); electron-builder publishing is disabled because builds go to Steam.
 - The Electron window background color is a literal `#111318` (bg-900) in `electron/main.cjs` — the main process can't import the TypeScript theme; it only shows before the page paints.
 - add-fighter walkthrough (Phase 12): a throwaway fighter `zz-walkthrough` was added in its own folder; validation, movement, pairing and bot tests picked it up automatically, `sim:bots` ran it against every fighter, and `git status` showed zero changes outside the folder. It was then deleted.
+- Part toughness is shown by MAX health tier (fragile ≤ 40, medium 41–99, tough ≥ 100, tokens in `theme.ts`) using outline weight — thin / normal / double with a dark inner rim — never fill lightness, which stays reserved for damage. Tiers are absolute so they compare across fighters.
+- Fighter select shows a toughness map (tier outlines + HP numbers on parts big enough for a label) and a tier list grouping mirrored parts by type ("Upper arm ×2 80").
+- Health-bar track length is proportional to each part's max health on one scale shared by both fighters in the match (the toughest part = full length), with "current/max" numbers.
 
 ## Final verification (Phase 13)
 - `npm run check`: typecheck + lint + 118 tests (19 files) pass.

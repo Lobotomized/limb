@@ -101,6 +101,42 @@ export const DAMAGE_STATES = [
   { minPct: 0, mix: 0.7, cracks: 4, blink: true },
 ] as const;
 
+/**
+ * Toughness tiers by a part's MAX health (absolute, comparable across fighters). Shown with
+ * outline weight, never with fill lightness (lightness is reserved for damage).
+ *   fragile: thin outline · medium: normal outline · tough: double outline
+ */
+export type ToughnessTier = 'fragile' | 'medium' | 'tough';
+export const TOUGHNESS = {
+  /** maxHealth at or below this is fragile. */
+  fragileMax: 40,
+  /** maxHealth at or above this is tough. */
+  toughMin: 100,
+  /** Outline widths (px) per tier; tough also gets an inner line. */
+  stroke: { fragile: 1, medium: 3, tough: 3 } as Record<ToughnessTier, number>,
+  innerStroke: 2,
+  innerGap: 5,
+  /** Arena inner rim of tough parts: dark line for contrast on any player color. */
+  innerColor: COLOR.bg900,
+  innerAlpha: 0.8,
+  labels: { fragile: 'Fragile', medium: 'Medium', tough: 'Tough' } as Record<ToughnessTier, string>,
+  /** Diagram parts smaller than this (px radius) get no HP label (listed instead). */
+  minLabelRadiusPx: 9,
+  labelSize: 10,
+  labelOutline: 3,
+  /** Legend swatch height (px). */
+  legendSwatch: 18,
+  /** Health bar track length (px at 1080p) for the toughest part in the match. */
+  barMaxWidth: 240,
+  barMinWidth: 6,
+} as const;
+
+export function toughnessTier(maxHealth: number): ToughnessTier {
+  if (maxHealth <= TOUGHNESS.fragileMax) return 'fragile';
+  if (maxHealth >= TOUGHNESS.toughMin) return 'tough';
+  return 'medium';
+}
+
 /** Health band color for bars and the body diagram. */
 export function healthColor(pct: number): string {
   if (pct > 75) return COLOR.health100;
@@ -205,6 +241,8 @@ export const LAYOUT = {
   sandboxInputWidth: 90,
   previewDiagramScale: 1.5,
   resultsRows: 6,
+  toughnessLabelWidth: 190,
+  barValueWidth: 64,
 } as const;
 
 /** UI scale: 1 at 1080p window height, times the user's UI scale setting. */

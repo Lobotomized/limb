@@ -9,7 +9,7 @@ import { Rng, mixSeed } from '../core/rng';
 import type { Camera } from './camera';
 import type { FighterFrame, PartFrame } from './frame';
 import { shapeExtent, shapePath, shapeRadius } from './shapes';
-import { COLOR, DAMAGE_STATES, FIGHTER_STYLE, OPACITY, PLAYER, SHADOW, STROKE, hex, lighten, mixHex } from './theme';
+import { COLOR, DAMAGE_STATES, FIGHTER_STYLE, OPACITY, PLAYER, SHADOW, STROKE, TOUGHNESS, hex, lighten, mixHex, toughnessTier, type ToughnessTier } from './theme';
 
 type Crack = number[]; // local-space polyline [x0,y0,x1,y1,...] in meters
 
@@ -17,6 +17,8 @@ export class FighterRenderer {
   private readonly cracks: Crack[][];
   private readonly color: string;
   private readonly outline: number;
+  /** Toughness tier of each part (from max health), shown as outline weight. */
+  private readonly tiers: ToughnessTier[];
 
   constructor(
     readonly cf: CompiledFighter,
@@ -24,6 +26,7 @@ export class FighterRenderer {
   ) {
     this.color = PLAYER[player]!.color;
     this.outline = lighten(this.color, FIGHTER_STYLE.outlineLighten);
+    this.tiers = cf.def.parts.map((p) => toughnessTier(p.maxHealth));
     // Seeded cracks per part: stable for a given fighter/part on every machine.
     this.cracks = cf.def.parts.map((p, i) => {
       const rng = new Rng(mixSeed(player + 1, i + 1, p.id.length));
@@ -73,8 +76,14 @@ export class FighterRenderer {
       if (alpha <= 0) continue;
       const fill = mixHex(this.color, COLOR.bg700, ds.mix);
       const outline = attached && ds.blink && !blinkOn ? hex(COLOR.ink) : this.outline;
+      const tier = this.tiers[i]!;
       shapePath(g, cam, shape, pf.x, pf.y, pf.angle);
-      g.fill({ color: fill, alpha }).stroke({ width: STROKE.part * scale, color: outline, alpha, alignment: 0.5 });
+      g.fill({ color: fill, alpha }).stroke({ width: TOUGHNESS.stroke[tier] * scale, color: outline, alpha, alignment: 0.5 });
+      if (tier === 'tough') {
+        // Double outline: a dark inner rim marks armor-grade parts at a glance.
+        shapePath(g, cam, shape, pf.x, pf.y, pf.angle, -TOUGHNESS.innerGap * scale);
+        g.stroke({ width: TOUGHNESS.innerStroke * scale, color: hex(TOUGHNESS.innerColor), alpha: alpha * TOUGHNESS.innerAlpha, alignment: 0.5 });
+      }
       // Cracks (2px bg900 lines).
       const n = attached ? ds.cracks : 2;
       if (n > 0) {

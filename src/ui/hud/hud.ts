@@ -10,6 +10,11 @@ import { el } from '../dom';
 import { buildBodyDiagram, type BodyDiagram } from './body-diagram';
 import { HealthBars } from './health-bars';
 
+/** Toughest part in the match: the shared full-length scale for every health bar. */
+export function matchMaxPartHealth(ctx: SimContext): number {
+  return Math.max(...ctx.defs.flatMap((d) => d.parts.map((p) => p.maxHealth)));
+}
+
 interface Panel {
   root: HTMLElement;
   diagram: BodyDiagram;
@@ -58,7 +63,7 @@ export class Hud {
     }
     const toast = el('div', 'toast t-hud-label');
     toast.style.color = pl.color;
-    const bars = new HealthBars(cf);
+    const bars = new HealthBars(cf, matchMaxPartHealth(this.ctx));
     bars.el.style.display = this.detailed ? '' : 'none';
     const root = el(
       'div',

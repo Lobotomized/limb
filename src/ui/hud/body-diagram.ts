@@ -6,7 +6,7 @@
 import { posesFor } from '../../core/fighter';
 import type { CompiledFighter } from '../../core/fighter-compile';
 import type { ShapeDef } from '../../core/schema/fighter-schema';
-import { COLOR, STROKE, healthColor } from '../../render/theme';
+import { COLOR, FONT, STROKE, TOUGHNESS, healthColor, toughnessTier } from '../../render/theme';
 import { svg } from '../dom';
 
 type Pt = [number, number];
@@ -55,7 +55,7 @@ export interface BodyDiagram {
  * Builds the diagram. `mirror` flips it horizontally (P2 panel). `silhouette` fills every part
  * with `fill` instead of health colors (fighter select).
  */
-export function buildBodyDiagram(cf: CompiledFighter, opts: { mirror?: boolean; silhouette?: string; size?: number } = {}): BodyDiagram {
+export function buildBodyDiagram(cf: CompiledFighter, opts: { mirror?: boolean; silhouette?: string; size?: number; toughness?: boolean } = {}): BodyDiagram {
   const poses = posesFor(cf, 0, 0, 0, cf.def.joints.map((j) => j.idleAngle));
   // World (facing +x) -> diagram (facing up): dx = -y, dy = -x.
   const m = opts.mirror ? -1 : 1;
@@ -91,11 +91,39 @@ export function buildBodyDiagram(cf: CompiledFighter, opts: { mirror?: boolean; 
   const unit = side / (opts.size ?? 112);
   const order = [...cf.def.parts.keys()].sort((a, b) => Number(a === cf.core) - Number(b === cf.core));
   const parts: DiagramPart[] = new Array(cf.def.parts.length);
+  const labels: SVGTextElement[] = [];
   for (const i of order) {
     const d = outlines[i]!.map(([x, y], k) => `${k ? 'L' : 'M'}${x.toFixed(3)} ${y.toFixed(3)}`).join(' ') + ' Z';
-    const path = svg('path', { d, 'stroke-width': STROKE.hairline * unit, stroke: COLOR.bg900, fill: opts.silhouette ?? COLOR.health100 });
+    const fill = opts.silhouette ?? COLOR.health100;
+    const max = cf.def.parts[i]!.maxHealth;
+    if (opts.toughness) {
+      // Same visual language as the arena: thin = fragile, normal = medium, double = tough.
+      const tier = toughnessTier(max);
+      if (tier === 'tough') {
+        root.appendChild(svg('path', { d, fill, stroke: COLOR.ink, 'stroke-width': (TOUGHNESS.stroke.tough + TOUGHNESS.innerGap) * unit, 'stroke-linejoin': 'round' }));
+        root.appendChild(svg('path', { d, fill: 'none', stroke: fill, 'stroke-width': TOUGHNESS.innerGap * unit * 0.7, 'stroke-linejoin': 'round' }));
+      }
+      const path = svg('path', { d, fill: tier === 'tough' ? 'none' : fill, stroke: COLOR.ink, 'stroke-width': (tier === 'tough' ? 0 : TOUGHNESS.stroke[tier]) * unit, 'stroke-linejoin': 'round' });
+      root.appendChild(path);
+      parts[i] = { path, max };
+      // HP label on parts big enough to hold one.
+      const pts = outlines[i]!;
+      const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+      const cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      const r = Math.min(...[0, 1].map((ax) => (Math.max(...pts.map((p) => p[ax]!)) - Math.min(...pts.map((p) => p[ax]!))) / 2));
+      if (r / unit >= TOUGHNESS.minLabelRadiusPx) {
+        const t = svg('text', {
+          x: cx, y: cy, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': FONT.text, 'font-weight': 600,
+          'font-size': TOUGHNESS.labelSize * unit, fill: COLOR.ink, stroke: COLOR.bg900, 'stroke-width': TOUGHNESS.labelOutline * unit, 'paint-order': 'stroke',
+        });
+        t.textContent = String(max);
+        labels.push(t);
+      }
+      continue;
+    }
+    const path = svg('path', { d, 'stroke-width': STROKE.hairline * unit, stroke: COLOR.bg900, fill });
     root.appendChild(path);
-    parts[i] = { path, max: cf.def.parts[i]!.maxHealth };
+    parts[i] = { path, max };
   }
   // Core ring.
   const core = outlines[cf.core]!;
@@ -110,6 +138,7 @@ export function buildBodyDiagram(cf: CompiledFighter, opts: { mirror?: boolean; 
   const r = Math.max(...core.map(([x, y]) => Math.hypot(x - cx, y - cy)));
   const ring = svg('circle', { cx, cy, r: r + 3 * unit, fill: 'none', stroke: COLOR.core, 'stroke-width': STROKE.core * unit * 0.6 });
   root.appendChild(ring);
+  for (const t of labels) root.appendChild(t);
   return {
     el: root,
     parts,

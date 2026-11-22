@@ -3,6 +3,7 @@ import type { SimState } from '../../core/state';
 import { PLAYER } from '../../render/theme';
 import { el } from '../dom';
 import { HealthBars } from '../hud/health-bars';
+import { matchMaxPartHealth } from '../hud/hud';
 import type { UiHost } from './host';
 import { settingsScreen } from './settings-screen';
 
@@ -19,7 +20,7 @@ export function confirmScreen(host: UiHost, question: string, yes: string, onYes
 }
 
 export function pauseScreen(host: UiHost, sim: () => SimState, online: boolean) {
-  const bars = [0, 1].map((i) => new HealthBars(sim().ctx.compiled[i]!));
+  const bars = [0, 1].map((i) => new HealthBars(sim().ctx.compiled[i]!, matchMaxPartHealth(sim().ctx)));
   const s = host.screen(
     [
       { label: 'Resume', action: () => host.resume() },

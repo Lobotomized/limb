@@ -12,10 +12,10 @@ export function shapePath(g: Graphics, cam: Camera, shape: ShapeDef, x: number, 
   const s = Math.sin(th);
   switch (shape.kind) {
     case 'circle':
-      g.circle(cx, cy, cam.px(shape.radius) + inflatePx);
+      g.circle(cx, cy, Math.max(1, cam.px(shape.radius) + inflatePx));
       return;
     case 'capsule': {
-      const r = cam.px(shape.radius) + inflatePx;
+      const r = Math.max(1, cam.px(shape.radius) + inflatePx);
       const h = cam.px(Math.max(0.001, shape.length / 2 - shape.radius));
       const x1 = cx - c * h;
       const y1 = cy - s * h;
