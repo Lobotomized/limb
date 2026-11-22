@@ -4,7 +4,7 @@
  */
 import type { Ability } from '../abilities/ability';
 import type { ArenaDef } from './arena-schema';
-import { MOVE_BUTTONS, type FighterDef, type ShapeDef } from './fighter-schema';
+import { MOVE_BUTTONS, STEERINGS, type FighterDef, type ShapeDef } from './fighter-schema';
 
 const MAX_PHASES = 8;
 const MAX_MOVE_TICKS = 300;
@@ -210,6 +210,7 @@ export function validateFighter(def: FighterDef, abilities: readonly Ability[] =
     r.range('locomotion.turnSpeed', l.turnSpeed, 0.1, 50);
     r.range('locomotion.turnTorque', l.turnTorque, 0.1, 50000);
     r.range('locomotion.dashImpulse', l.dashImpulse, 0, 10000);
+    if (l.steering !== undefined && !STEERINGS.includes(l.steering)) r.err('locomotion.steering', `must be one of ${STEERINGS.join(', ')}`);
   }
 
   // ---------------------------------------------------------------- ability fields

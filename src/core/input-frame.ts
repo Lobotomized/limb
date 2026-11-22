@@ -31,7 +31,7 @@ export const ACTION_BUTTONS = [Button.ACTION1, Button.ACTION2] as const;
 
 /** How facing is controlled this tick. */
 export const AimMode = {
-  /** Face the opponent's core. */
+  /** No aim input: keep the current facing (fighters never turn toward the opponent by themselves). */
   AUTO: 0,
   /** Face along (aimX, aimY). */
   VECTOR: 1,
@@ -42,7 +42,10 @@ export const AimMode = {
 } as const;
 
 export interface InputFrame {
-  /** Movement stick, world space (y up), -127..127. */
+  /**
+   * Movement stick, -127..127 (y up). How it steers depends on the fighter's `locomotion.steering`:
+   * 'omni' = world-space direction; 'tank' = moveY drives forward/back, moveX turns (right = clockwise).
+   */
   moveX: number;
   moveY: number;
   /** Aim stick, world space, -127..127 (used when aimMode = VECTOR). */

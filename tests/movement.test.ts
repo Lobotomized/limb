@@ -34,16 +34,39 @@ describe.each(FIGHTERS)('%s movement', (id) => {
     expect(Math.abs(angleDiff(facingOf(s, 0), target))).toBeLessThan(0.25);
   });
 
-  it('turns with turn-left input and auto-faces the opponent otherwise', () => {
+  it('turns with turn-left input and then holds that heading (never auto-faces the opponent)', () => {
     const s = newMatch({ a: id, b: id, arena: BIG_BOX });
     const before = facingOf(s, 0);
     run(s, 20, () => [input({ aimMode: AimMode.TURN_LEFT }), input({})]);
     expect(angleDiff(before, facingOf(s, 0))).toBeGreaterThan(0.3);
+    run(s, 30, () => [input({}), input({})]); // settle
+    const held = facingOf(s, 0);
     run(s, 200, () => [input({}), input({})]);
+    expect(Math.abs(angleDiff(held, facingOf(s, 0)))).toBeLessThan(0.1);
     const cf = s.ctx.compiled[1];
     const op = s.physics.pose(s.game.fighters[1]!.parts[cf.core]!.body);
     const me = s.physics.pose(s.game.fighters[0]!.parts[s.ctx.compiled[0].root]!.body);
-    expect(Math.abs(angleDiff(facingOf(s, 0), atan2(op.y - me.y, op.x - me.x)))).toBeLessThan(0.3);
+    expect(Math.abs(angleDiff(facingOf(s, 0), atan2(op.y - me.y, op.x - me.x)))).toBeGreaterThan(0.3);
+  });
+
+  it('steers by its locomotion.steering: tank = up drives forward, right turns clockwise; omni = stick is a direction, no turning', () => {
+    const s = newMatch({ a: id, b: id, arena: BIG_BOX });
+    const tank = (s.ctx.defs[0].locomotion.steering ?? 'tank') === 'tank';
+    const face0 = facingOf(s, 0);
+    run(s, 20, () => [input({ moveX: 127 }), input({})]);
+    const turned = angleDiff(face0, facingOf(s, 0));
+    if (tank) expect(turned).toBeLessThan(-0.3); // clockwise
+    else expect(Math.abs(turned)).toBeLessThan(0.1);
+    // Drive "up" for a while: tank moves along its facing, omni moves +y.
+    run(s, 30, () => [input({}), input({})]);
+    const face = facingOf(s, 0);
+    const root = (): { x: number; y: number } => s.physics.pose(s.game.fighters[0]!.parts[s.ctx.compiled[0].root]!.body);
+    const p0 = root();
+    run(s, 60, () => [input({ moveY: 127 }), input({})]);
+    const p1 = root();
+    const dir = atan2(p1.y - p0.y, p1.x - p0.x);
+    expect(Math.abs(angleDiff(dir, tank ? face : Math.PI / 2))).toBeLessThan(0.35);
+    expect(Math.abs(angleDiff(face, facingOf(s, 0)))).toBeLessThan(0.15); // driving never turns
   });
 
   it('dashes with a cooldown', () => {

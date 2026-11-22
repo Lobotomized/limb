@@ -94,7 +94,18 @@ export interface MoveDef {
   requires: string[];
 }
 
+/**
+ * How the movement stick steers the fighter (no fighter ever turns toward the opponent on its own):
+ *  - 'tank': stick up/down = forward/back along facing, left/right = turn. For fighters with a front.
+ *  - 'omni': stick moves in screen directions, facing only changes with the turn keys / aim stick.
+ *    For fully symmetric bodies (e.g. the octopus) that have no front to steer.
+ */
+export type Steering = 'tank' | 'omni';
+export const STEERINGS: readonly Steering[] = ['tank', 'omni'];
+
 export interface LocomotionDef {
+  /** Optional, default 'tank'. See `Steering`. */
+  steering?: Steering;
   /** Max root speed (m/s) with all locomotion parts alive. */
   walkSpeed: number;
   /** Max steering force (N) on the root. */

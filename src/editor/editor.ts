@@ -514,6 +514,19 @@ export class FighterEditor {
       ),
       section(
         'Locomotion',
+        selectField(
+          'Steering',
+          [
+            { value: 'tank', label: 'Tank — up/down drive, left/right turn' },
+            { value: 'omni', label: 'Omni — stick moves in any direction (symmetric bodies)' },
+          ],
+          () => loco.steering ?? 'tank',
+          (v) => {
+            if (v === 'tank') delete loco.steering;
+            else loco.steering = v;
+          },
+          h,
+        ),
         numberField('Walk speed (m/s)', () => loco.walkSpeed, (v) => (loco.walkSpeed = v), h, { min: 0.5, max: 10, slider: true, step: 0.1 }),
         numberField('Walk force (N)', () => loco.walkForce, (v) => (loco.walkForce = v), h, { min: 50, max: 800, slider: true, step: 5 }),
         numberField('Turn speed (rad/s)', () => loco.turnSpeed, (v) => (loco.turnSpeed = v), h, { min: 0.5, max: 15, slider: true, step: 0.1 }),

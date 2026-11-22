@@ -1,8 +1,10 @@
 /**
  * Movement, facing and dash. All forces act on the root part.
- *  - Move: steering force toward stick direction * walkSpeed, scaled by the share of
- *    locomotion parts still attached (10% force drift with none left).
- *  - Facing: torque on the root toward the aim direction (or a held move's spin).
+ *  - Move: steering force toward a desired velocity, scaled by the share of locomotion parts
+ *    still attached (10% force drift with none left). `locomotion.steering` picks the mapping:
+ *    'tank' = stick up/down drives along facing, left/right turns; 'omni' = stick is a world direction.
+ *  - Facing: torque on the root toward a held aim angle. Nothing turns a fighter toward the
+ *    opponent: facing changes only with tank turning, the turn keys, the aim stick or a move's spin.
  *  - Dash: one impulse with a cooldown; needs a living locomotion part.
  */
 import type { CompiledFighter } from './fighter-compile';
@@ -51,9 +53,32 @@ export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spi
   const pose = s.physics.pose(root.body);
   const vel = s.physics.velocity(root.body);
 
-  // ---- movement
+  // ---- stick -> world move direction (mx, my) and tank turn input
+  const tank = (loco.steering ?? 'tank') === 'tank';
   let mx = input.moveX / 127;
   let my = input.moveY / 127;
+  let turn = 0;
+  if (tank) {
+    // Square the circle so keyboard diagonals (0.71, 0.71) and full analog diagonals drive and turn at full rate.
+    const ax = Math.abs(mx);
+    const ay = Math.abs(my);
+    const big = ax > ay ? ax : ay;
+    if (big > 0) {
+      const k = Math.sqrt(mx * mx + my * my) / big;
+      mx *= k;
+      my *= k;
+    }
+    turn = clamp(mx, -1, 1);
+    const throttle = clamp(my, -1, 1);
+    if (Math.abs(throttle) < t.stickDeadzone) {
+      mx = 0;
+      my = 0;
+    } else {
+      mx = cos(pose.angle) * throttle;
+      my = sin(pose.angle) * throttle;
+    }
+    if (Math.abs(turn) < t.stickDeadzone) turn = 0;
+  }
   const mag = Math.sqrt(mx * mx + my * my);
   if (mag > 1) {
     mx /= mag;
@@ -89,6 +114,10 @@ export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spi
   let desiredW: number;
   if (spin !== null) {
     desiredW = spin;
+  } else if (turn !== 0) {
+    // Tank steering: stick right = clockwise (negative angle).
+    desiredW = -turn * loco.turnSpeed;
+    f.aimAngle = pose.angle;
   } else if (input.aimMode === AimMode.TURN_LEFT) {
     desiredW = loco.turnSpeed;
     f.aimAngle = pose.angle;
@@ -96,18 +125,8 @@ export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spi
     desiredW = -loco.turnSpeed;
     f.aimAngle = pose.angle;
   } else {
-    if (input.aimMode === AimMode.VECTOR && (input.aimX !== 0 || input.aimY !== 0)) {
-      f.aimAngle = atan2(input.aimY, input.aimX);
-    } else {
-      // Auto: face the opponent's core (or root if the core is gone).
-      const other = s.game.fighters[1 - fi]!;
-      const ocf = s.ctx.compiled[1 - fi]!;
-      const target = other.parts[ocf.core]!.body >= 0 ? other.parts[ocf.core]! : other.parts[ocf.root]!;
-      if (target.body >= 0) {
-        const tp = s.physics.pose(target.body);
-        f.aimAngle = atan2(tp.y - pose.y, tp.x - pose.x);
-      }
-    }
+    // Aim stick sets a new heading; otherwise hold the last one (no auto-facing).
+    if (input.aimMode === AimMode.VECTOR && (input.aimX !== 0 || input.aimY !== 0)) f.aimAngle = atan2(input.aimY, input.aimX);
     const err = angleDiff(pose.angle, f.aimAngle);
     desiredW = clamp(err * t.turnGain, -loco.turnSpeed, loco.turnSpeed);
   }

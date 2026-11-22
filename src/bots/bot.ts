@@ -475,6 +475,13 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     }
     mem.dashDir = null;
   }
+  // Tank steering: the stick can't strafe, so drive along facing by the wanted direction's
+  // forward share (turning comes from the aim stick, which tank fighters also obey).
+  if ((cf.def.locomotion.steering ?? 'tank') === 'tank') {
+    const throttle = (out.moveX * cos(facing) + out.moveY * sin(facing)) / 127;
+    out.moveX = 0;
+    out.moveY = quantizeAxis(throttle);
+  }
   mem.prevButtons = out.buttons;
   return out;
 }

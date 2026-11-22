@@ -39,6 +39,9 @@ Then continue at step 6 below (tests, balance). The conventions in step 2 still 
      relative angles in (-π, π]); point limbs so their poses avoid ±π.
    - `strength` = max motor torque (N·m); `damping` ≈ 5–10 % of strength is a good start.
    - Tag legs/tentacles/feet `locomotion` (speed scales with how many survive), heavy plates `armor`.
+   - `locomotion.steering`: leave it out (`tank`: up/down drives along facing, left/right turns) unless
+     the body is fully symmetric with no front — then `"omni"` (stick moves in screen directions, like
+     the octopus). Nobody auto-faces the opponent, so a front-heavy design must be turned by the player.
    - **Exactly six `moves`**: one per move button, `"button": 1` … `6` (no direction: the stick only
      moves the fighter). Each move is a sequence of phases (targets, speed, ticks, optional
      `hold`, `spin`, `drive`) — follow the add-move skill and make every move interesting, not a

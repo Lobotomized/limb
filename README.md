@@ -38,7 +38,12 @@ the dev server; the game picks the fighter up immediately (Ctrl+S save, Ctrl+Z /
 | | Player 1 keyboard | Player 2 keyboard | Gamepad (twin-stick) |
 | --- | --- | --- | --- |
 | Move | W A S D | Arrow keys | Left stick |
-| Turn | Q / E (otherwise you face the opponent) | Numpad 7 / 9 (or , / .) | Right stick aims (release = face opponent) |
+| Turn | Q / E | Numpad 7 / 9 (or , / .) | Right stick aims (release = keep facing) |
+
+Most fighters steer like a tank: **up/down drives forward/back** along where you face and
+**left/right turns**. Fully symmetric fighters (the octopus) have no front, so the stick moves them
+in screen directions instead. Nobody turns toward the opponent on their own — you keep facing
+wherever you last turned.
 | Moves 1 / 2 / 3 | F / G / H | Numpad 1 / 2 / 3 (or J / K / L) | X / Y / B |
 | Moves 4 / 5 / 6 | R / T / Y | Numpad 4 / 5 / 6 (or U / I / O) | LB / RB / RT |
 | Dash | Left Shift | Numpad 0 (or Right Shift) | A or LT |

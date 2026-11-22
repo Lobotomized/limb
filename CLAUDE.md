@@ -19,6 +19,9 @@ Controls: every fighter has **exactly six moves**, one per move button 1–6 (`M
 The button alone picks the move; the movement stick only moves the fighter. A move is a sequence of
 phases (joint targets + speed + ticks, optional `hold`, `spin`, `drive`); one move at a time, presses
 during a move are buffered. See the add-move skill.
+Steering: no fighter auto-faces the opponent. `locomotion.steering` = `tank` (default: stick up/down
+drives along facing, left/right turns) or `omni` (stick is a screen direction; for fully symmetric
+bodies like the octopus). Turn keys / aim stick work for both; facing is otherwise held.
 
 Other decided rules: walls damage parts (same impact formula, the wall takes nothing); two arena
 sides are open **ring-out** edges (core crosses → round lost); no healing; own parts never collide;
@@ -34,7 +37,7 @@ nextState = step(state, inputs)      // src/core/simulation.ts, fixed 60 ticks/s
 ```
 - `src/core/` — deterministic simulation: `simulation.ts` (step), `state.ts` (types, save/restore,
   hash), `physics.ts` (Rapier wrapper; meters, **y up**, CCW radians), `damage.ts`, `fighter.ts`
-  (build/detach), `fighter-compile.ts` (id→index maps, accumulated move phases), `moves.ts` (move button 1–6 → phased moves), `locomotion.ts` (walk, turn, dash, move drive), `match.ts`
+  (build/detach), `fighter-compile.ts` (id→index maps, accumulated move phases), `moves.ts` (move button 1–6 → phased moves), `locomotion.ts` (tank/omni steering, turn, dash, move drive), `match.ts`
   (rounds, hit-stop), `arena.ts`, `events.ts`, `math.ts`, `rng.ts`, `hash.ts`, `tuning.ts`
   (ALL global constants), `input-frame.ts`, `loop.ts` (fixed-tick accumulator),
   `abilities/` (plugin interface + auto-discovery; **no abilities ship**), `schema/` (fighter &

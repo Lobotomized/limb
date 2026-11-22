@@ -714,6 +714,7 @@
     }
   ],
   "locomotion": {
+    "steering": "omni",
     "walkSpeed": 5.6,
     "walkForce": 260,
     "turnSpeed": 9,
