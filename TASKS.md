@@ -3,16 +3,16 @@
 Status: [ ] todo · [~] in progress · [x] done
 
 ## Phase 1: Setup
-- [~] 1. Initialize git, Vite + TypeScript (strict), folder structure
-- [ ] 2. Install Rapier deterministic, PixiJS, fonts, Vitest, ESLint with boundary rules; forbidden-API lint rules
-- [ ] 3. Scripts from 11.3 (stubs where needed), `npm run check` working
-- [ ] 4. CLAUDE.md (first version), DECISIONS.md, MANUAL_STEPS.md
+- [x] 1. Initialize git, Vite + TypeScript (strict), folder structure
+- [x] 2. Install Rapier deterministic, PixiJS, fonts, Vitest, ESLint with boundary rules; forbidden-API lint rules
+- [x] 3. Scripts from 11.3 (stubs where needed), `npm run check` working
+- [x] 4. CLAUDE.md (first version), DECISIONS.md, MANUAL_STEPS.md
 
 ## Phase 2: Deterministic core
-- [ ] 5. math.ts, rng.ts, fixed-tick loop
-- [ ] 6. physics.ts
-- [ ] 7. state.ts save/restore + hashing, events.ts
-- [ ] 8. simulation.ts step(state, inputs)
+- [x] 5. math.ts, rng.ts, fixed-tick loop
+- [x] 6. physics.ts
+- [x] 7. state.ts save/restore + hashing, events.ts
+- [x] 8. simulation.ts step(state, inputs)
 
 ## Phase 3: Fighters
 - [ ] 9. Schema, validator, auto-discovery loader
