@@ -44,14 +44,14 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 25. First balance pass
 
 ## Phase 9: Visuals
-- [ ] 26. theme.ts
-- [ ] 27. Fighter rendering
-- [ ] 28. Effects
-- [ ] 29. Arena rendering + camera
-- [ ] 30. HUD
-- [ ] 31. Menus
-- [ ] 32. Settings
-- [ ] 33. Audio
+- [x] 26. theme.ts
+- [x] 27. Fighter rendering
+- [x] 28. Effects
+- [x] 29. Arena rendering + camera
+- [x] 30. HUD
+- [x] 31. Menus
+- [x] 32. Settings
+- [x] 33. Audio
 
 ## Phase 10: Online
 - [ ] 34. Transport interface, local/fake transports, net simulator

@@ -44,3 +44,11 @@ One line each: decision — why.
 | octopus mirror (P1/P2) | 40% | 44% | 8 | 42 | 70.8 s |
 
 Known balancing issue left for the human: octopus mirrors are long (mantle-on-mantle hits deal equal damage, so both cores often die the same tick → replayed draw rounds). Easy/medium bots are less balanced than hard (humanoid–octopus swings strongly by difficulty).
+- Menus and HUD are DOM (with a stylesheet generated from `theme.ts`); the arena, fighters and effects are PixiJS — DOM gives focus/mouse/text/fonts for free, Pixi handles the per-frame drawing.
+- All UI sizes are `calc(var(--u) * Npx)` with `--u = windowHeight / 1080 × UI-scale setting` — the whole UI scales with window height as specified.
+- Fighters are redrawn every frame in screen space (immediate-mode Graphics) instead of scaled containers — stroke widths stay in screen pixels at any zoom, matching the design tokens.
+- The camera's minimum zoom fits the whole arena plus its margin; when the window aspect differs from the arena's, the extra space shows the bg-900 surround — keeps "never zoom out past the arena" and "keep both fighters on screen" compatible.
+- Local PvP fighter select is sequential (P1 then P2, any device); the result banner shows for the 2 s round-end phase while the round-start banner uses the specified 900 ms.
+- Online pause does not freeze the simulation (overlay only) — the opponent keeps playing; local pause freezes.
+- Dev-only `?demo=a,b` URL runs a hard bot-vs-bot match (used for screenshots and attract mode); `window.__limbClash` exposes the game for scripted play-tests.
+- The sandbox is reachable from the main menu in dev builds only (`import.meta.env.DEV`).

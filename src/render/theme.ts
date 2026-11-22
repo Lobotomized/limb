@@ -153,6 +153,7 @@ export const HUD = {
   panelWidth: 300,
   diagramSize: 112,
   pipSize: 12,
+  pipBorder: 2,
   toastMs: 2000,
   barHeight: 10,
   barAnimMs: 150,
@@ -182,8 +183,28 @@ export const CAMERA = {
 
 export const MENU = {
   buttonMinWidth: 320,
+  menuWidth: 440,
+  wideMenuWidth: 760,
   focusOffset: 3,
   screenMargin: SPACE[12],
+  scrimAlpha: 0.82,
+  buttonText: 20,
+  buttonLine: 24,
+  codeInputWidth: 220,
+  codeLetterSpacing: 0.2,
+} as const;
+
+/** Misc UI layout sizes (px at 1080p). */
+export const LAYOUT = {
+  fighterCardWidth: 260,
+  fighterArtHeight: 180,
+  barLabelWidth: 120,
+  barLabelSize: 11,
+  toastMinHeight: 16,
+  sandboxWidth: 360,
+  sandboxInputWidth: 90,
+  previewDiagramScale: 1.5,
+  resultsRows: 6,
 } as const;
 
 /** UI scale: 1 at 1080p window height, times the user's UI scale setting. */

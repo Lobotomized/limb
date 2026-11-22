@@ -107,6 +107,8 @@ export default tseslint.config(
             { from: el('render'), allow: { to: elTypes(['render', 'core', 'schema', 'registry', 'content']) } },
             { from: el('audio'), allow: { to: elTypes(['audio', 'core', 'schema']) } },
             { from: el('ui'), allow: { to: elTypes(['ui', 'render', 'audio', 'core', 'schema', 'registry', 'input', 'platform']) } },
+            // ui may name bot difficulty TYPES (menus), never run bot logic.
+            { from: el('ui'), allow: { to: el('bots'), dependency: { kind: 'type' } } },
             { from: el('platform'), allow: { to: elTypes(['platform']) } },
             // the app entry wires everything together.
             { from: el('app'), allow: { to: elTypes(['app', 'core', 'schema', 'content', 'registry', 'bots', 'input', 'net', 'render', 'ui', 'audio', 'platform']) } },
