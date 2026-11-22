@@ -60,9 +60,9 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 37. sim:net tool
 
 ## Phase 11: Desktop and Steam
-- [ ] 38. Electron app, platform layer, packaging
-- [ ] 39. Steam integration + fake
-- [ ] 40. STEAM.md
+- [x] 38. Electron app, platform layer, packaging
+- [x] 39. Steam integration + fake
+- [x] 40. STEAM.md
 
 ## Phase 12: Harness and docs
 - [ ] 41. Final CLAUDE.md

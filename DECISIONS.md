@@ -59,3 +59,9 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - Desync reports go through the platform layer: browser → console + downloaded text file; Electron → a file in the user data folder.
 - The WebRTC transport uses public Google STUN for NAT traversal (configurable in `src/net/config.ts`); a TURN server is not included (see MANUAL_STEPS.md).
 - The signaling URL defaults to `ws(s)://<page host>:8787`; override with `?signal=wss://…` or the `signalingUrl` setting.
+- Steam wrapper: `steamworks.js` 0.4 — has lobbies, invite overlay, P2P send/read/accept, rich presence and callbacks (everything needed); it bundles the Steamworks redistributables.
+- Steam runs in the Electron main process (`electron/steam-core.cjs`, pure logic over the client object so tests use a fake); the renderer talks to it only through the preload bridge. P2P packets are pushed to the renderer over IPC.
+- Steam lobbies are friends-only with 2 members; P2P sessions are accepted only from the other lobby member.
+- Pixi, Rapier and fonts are devDependencies (bundled by Vite); runtime dependencies are only what the Electron main process or the server needs (steamworks.js, ws) — smaller packaged app.
+- `npm run dist` builds for the current OS only (AppImage + unpacked dir on Linux, NSIS on Windows, DMG on macOS); electron-builder publishing is disabled because builds go to Steam.
+- The Electron window background color is a literal `#111318` (bg-900) in `electron/main.cjs` — the main process can't import the TypeScript theme; it only shows before the page paints.
