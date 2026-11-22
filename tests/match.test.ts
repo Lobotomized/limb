@@ -27,12 +27,12 @@ describe('part death', () => {
     expect(f.parts[partIndex(s, 0, 'forearm_r')]!.status).toBe('attached');
     expect(ofType(sink.events, 'partDied').map((e) => e.ref.part)).toEqual([ua]);
     expect(ofType(sink.events, 'partDetached').length).toBe(2);
-    const jab = cf.def.moves.findIndex((m) => m.slot === 1 && m.name === 'Jab');
-    const jabR = cf.def.moves.findIndex((m) => m.slot === 2 && m.name === 'Jab');
-    expect(moveAvailable(f, cf, jab)).toBe(false);
-    expect(moveAvailable(f, cf, jabR)).toBe(true);
-    // Pressing the dead slot does nothing.
-    const ev = run(s, 5, (t) => [input({ buttons: t % 2 ? Button.SLOT1 : 0 }), input({})]);
+    const oneTwo = cf.def.moves.findIndex((m) => m.name === 'One-two'); // needs both arms
+    const haymaker = cf.def.moves.findIndex((m) => m.name === 'Haymaker'); // right arm only
+    expect(moveAvailable(f, cf, oneTwo)).toBe(false);
+    expect(moveAvailable(f, cf, haymaker)).toBe(true);
+    // Pressing A (neutral) now does nothing.
+    const ev = run(s, 5, (t) => [input({ buttons: t % 2 ? Button.ATTACK_A : 0 }), input({})]);
     expect(ofType(ev, 'moveStarted')).toEqual([]);
     // Debris is removed after its lifetime.
     run(s, T.debrisTicks + 2, () => [input({}), input({})]);

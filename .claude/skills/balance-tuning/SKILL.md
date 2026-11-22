@@ -35,3 +35,8 @@ equal on both parts. Typical limb impacts are 0.5–2, solid hits 3–6, heavy s
 - A root that isn't the core is a second weak point (humanoid torso).
 - Mantle-sized cores trade into small exposed cores; mirror matches of the same core draw a lot.
 - `wallDamageScale` strongly affects heavy-vs-light matchups (pinning).
+- Drive phases: long root-first lunges make heavy roots/cores collide (huge equal damage, mirror
+  draws). Keep travel short and lead with limbs. A phase's `spin` above what `turnTorque` can reach
+  changes nothing.
+- Bot hints decide a lot now: a move missing from `attackMoves`/`guardMoves` is never used by bots
+  (e.g. octopus Jet retreat / Spear dive). The hard bot's health-trade weight is in `src/bots/bot.ts`.

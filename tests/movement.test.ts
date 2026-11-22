@@ -2,7 +2,9 @@
 // losing locomotion parts reduces speed.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BIG_BOX, input, jointAngle, newMatch, partIndex, rootSpeed, run, setup } from './helpers';
-import { AimMode, Button, SLOT_BUTTONS } from '../src/core/input-frame';
+import { AimMode, ATTACK_BUTTONS, Button } from '../src/core/input-frame';
+import { MOVE_BUTTONS } from '../src/core/schema/fighter-schema';
+import { step } from '../src/core/simulation';
 import { facingOf, locomotionShare } from '../src/core/locomotion';
 import { killPart } from '../src/core/fighter';
 import { EventSink } from '../src/core/events';
@@ -11,6 +13,7 @@ import { allFighters } from '../src/registry/fighters';
 import { resolveMove } from '../src/core/moves';
 
 beforeAll(setup);
+
 
 const FIGHTERS = allFighters().map((f) => f.def.id);
 
@@ -52,29 +55,87 @@ describe.each(FIGHTERS)('%s movement', (id) => {
     expect(later.filter((e) => e.type === 'dash' && e.fighter === 0).length).toBe(1); // cooldown 45
   });
 
-  it('performs every move (joints reach their targets)', () => {
+  it('performs every move: each phase reaches its pose, drives move the body, the move ends', () => {
     const def = allFighters().find((f) => f.def.id === id)!.def;
-    const dirs: Record<string, { x: number; y: number }> = { neutral: { x: 0, y: 0 }, forward: { x: 1, y: 0 }, back: { x: -1, y: 0 }, up: { x: 0, y: 1 }, down: { x: 0, y: -1 } };
     def.moves.forEach((m, mi) => {
       const s = newMatch({ a: id, b: id, arena: BIG_BOX });
-      const f = facingOf(s, 0);
-      const d = dirs[m.direction]!;
-      const wx = d.x * cos(f) - d.y * sin(f);
-      const wy = d.x * sin(f) + d.y * cos(f);
-      expect(resolveMove(s.ctx.compiled[0], m.slot, m.direction)).toBe(mi);
-      // Hold the slot; stick only on the press tick (so the fighter doesn't walk away).
+      const cf = s.ctx.compiled[0];
+      const face = facingOf(s, 0);
+      const sign = m.direction === 'forward' ? 1 : m.direction === 'back' ? -1 : 0;
+      expect(resolveMove(cf, m.button, m.direction)).toBe(mi);
+      const cm = cf.moves[mi]!;
+      // Hold the button through the first hold phase (plus a little), stick only on the press tick.
+      let holdTicks = 0;
+      for (const p of cm.phases) {
+        holdTicks += p.ticks;
+        if (p.hold) {
+          holdTicks += 6;
+          break;
+        }
+      }
       const startTick = s.game.tick;
-      const ev = run(s, 50, (t) => [
-        input({ moveX: t === startTick ? Math.round(wx * 127) : 0, moveY: t === startTick ? Math.round(wy * 127) : 0, buttons: SLOT_BUTTONS[m.slot - 1], aimMode: m.spin ? AimMode.AUTO : AimMode.VECTOR, aimX: Math.round(cos(f) * 127), aimY: Math.round(sin(f) * 127) }),
-        input({}),
-      ]);
-      expect(ev.some((e) => e.type === 'moveStarted' && e.move === mi), `${m.name} started`).toBe(true);
-      for (const tg of m.targets) {
-        const a = jointAngle(s, 0, tg.joint);
-        expect(Math.abs(angleDiff(a, tg.angle)), `${m.name}: ${tg.joint} at ${a.toFixed(2)} target ${tg.angle}`).toBeLessThan(0.45);
+      const root0 = s.physics.pose(s.game.fighters[0]!.parts[cf.root]!.body);
+      const spins = cm.phases.some((p) => p.spin !== null);
+      // Best error per phase per target seen while in that phase (or the 3 ticks after).
+      const best = cm.phases.map((p) => new Map(p.targets.map((t) => [t.joint, Infinity])));
+      const seen: number[] = [];
+      let started = false;
+      for (let k = 0; k < 400; k++) {
+        const tk = s.game.tick;
+        const ev = step(s, [
+          input({ moveX: tk === startTick ? Math.round(sign * cos(face) * 127) : 0, moveY: tk === startTick ? Math.round(sign * sin(face) * 127) : 0, buttons: tk - startTick < holdTicks ? ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] : 0, aimMode: spins ? AimMode.AUTO : AimMode.VECTOR, aimX: Math.round(cos(face) * 127), aimY: Math.round(sin(face) * 127) }),
+          input({}),
+        ]);
+        if (ev.some((e) => e.type === 'moveStarted' && e.move === mi)) started = true;
+        const a = s.game.fighters[0]!.action;
+        if (a.move === mi) seen.push(a.phase);
+        const phases = a.move === mi ? [a.phase] : [];
+        if (a.move === mi && a.phase > 0 && a.phaseTick < 3) phases.push(a.phase - 1);
+        if (a.move < 0 && seen.length && seen.length + 3 > k) phases.push(cm.phases.length - 1);
+        for (const ph of phases)
+          for (const t of cm.phases[ph]!.targets) {
+            const err = Math.abs(angleDiff(jointAngle(s, 0, def.joints[t.joint]!.id), t.angle));
+            best[ph]!.set(t.joint, Math.min(best[ph]!.get(t.joint)!, err));
+          }
+        if (started && a.move < 0 && k > 3) break;
+      }
+      expect(started, `${m.name} started`).toBe(true);
+      expect(s.game.fighters[0]!.action.move, `${m.name} ended`).toBe(-1);
+      expect(new Set(seen).size, `${m.name} went through every phase`).toBe(cm.phases.length);
+      best.forEach((errs, ph) =>
+        errs.forEach((err, j) => expect.soft(err, `${m.name} phase ${ph}: joint ${def.joints[j]!.id} best error ${err.toFixed(2)}`).toBeLessThan(0.5)),
+      );
+      // Net drive (forward, left) moves the root that way relative to the starting facing.
+      const fwd = cm.phases.reduce((acc, p) => acc + (p.drive ? p.drive[0] * p.ticks : 0), 0) / 60;
+      if (Math.abs(fwd) > 0.5) {
+        const r = s.physics.pose(s.game.fighters[0]!.parts[cf.root]!.body);
+        const moved = (r.x - root0.x) * cos(face) + (r.y - root0.y) * sin(face);
+        expect.soft(Math.sign(moved), `${m.name} drives ${fwd > 0 ? 'forward' : 'back'} (moved ${moved.toFixed(2)} m)`).toBe(Math.sign(fwd));
+        expect.soft(Math.abs(moved), `${m.name} drive distance`).toBeGreaterThan(Math.abs(fwd) * 0.35);
       }
       s.physics.free();
     });
+  });
+
+  it('stick direction relative to facing picks the move; sideways counts as neutral', () => {
+    const s = newMatch({ a: id, b: id, arena: BIG_BOX });
+    const cf = s.ctx.compiled[0];
+    const face = facingOf(s, 0);
+    const press = (dx: number, dy: number): number => {
+      const x = dx * cos(face) - dy * sin(face);
+      const y = dx * sin(face) + dy * cos(face);
+      const ev = run(s, 1, () => [input({ moveX: Math.round(x * 127), moveY: Math.round(y * 127), buttons: Button.ATTACK_B }), input({})]);
+      const st = ev.find((e) => e.type === 'moveStarted');
+      // Cancel the move so the next press starts fresh.
+      s.game.fighters[0]!.action.move = -1;
+      run(s, 1, () => [input({}), input({})]);
+      return st && st.type === 'moveStarted' ? st.move : -2;
+    };
+    expect(press(1, 0)).toBe(resolveMove(cf, 'B', 'forward'));
+    expect(press(-1, 0)).toBe(resolveMove(cf, 'B', 'back'));
+    expect(press(0, 1)).toBe(resolveMove(cf, 'B', 'neutral'));
+    expect(press(0, 0)).toBe(resolveMove(cf, 'B', 'neutral'));
+    expect(press(0.7, 0.7)).toBe(resolveMove(cf, 'B', 'forward'));
   });
 
   it('losing locomotion parts reduces speed', () => {

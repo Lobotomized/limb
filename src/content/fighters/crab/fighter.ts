@@ -92,40 +92,76 @@ const joints: JointDef[] = [
 
 const CRUSHER = ['crusher_arm', 'crusher'];
 const SMALL = ['small_arm', 'small_claw'];
-const LEGS_L = ['leg_l1', 'leg_l2', 'leg_l3'];
-const LEGS_R = ['leg_r1', 'leg_r2', 'leg_r3'];
+
+type T = MoveDef['phases'][number]['targets'];
+const SMALL_OUT: T = [{ joint: 'small_shoulder', angle: 0.05 }, { joint: 'small_wrist', angle: 0 }];
+const SMALL_IN: T = [{ joint: 'small_shoulder', angle: -0.45 }, { joint: 'small_wrist', angle: -0.6 }];
+/** Both claws pulled wide to the sides (crusher on the right, small claw on the left). */
+const CLAWS_WIDE: T = [{ joint: 'crusher_shoulder', angle: -1.15 }, { joint: 'crusher_wrist', angle: -0.5 }, { joint: 'small_shoulder', angle: 1.1 }, { joint: 'small_wrist', angle: 0.5 }];
+/** Both claws folded over the front shell. */
+const CLAWS_FOLDED: T = [{ joint: 'crusher_shoulder', angle: 1.05 }, { joint: 'crusher_wrist', angle: 1.2 }, { joint: 'small_shoulder', angle: -1.05 }, { joint: 'small_wrist', angle: -1.2 }];
+const CRUSHER_WIDE: T = [{ joint: 'crusher_shoulder', angle: -1.15 }, { joint: 'crusher_wrist', angle: -0.5 }];
+const CRUSHER_ACROSS: T = [{ joint: 'crusher_shoulder', angle: 1.4 }, { joint: 'crusher_wrist', angle: 1.1 }];
 
 const moves: MoveDef[] = [
-  // ---- slot 1: crusher claw
-  { slot: 1, direction: 'neutral', name: 'Claw thrust', targets: [{ joint: 'crusher_shoulder', angle: -0.05 }, { joint: 'crusher_wrist', angle: 0 }], speed: 12, returnSpeed: 7, requires: CRUSHER },
-  { slot: 1, direction: 'up', name: 'Pinch swing', targets: [{ joint: 'crusher_shoulder', angle: 1.4 }, { joint: 'crusher_wrist', angle: 1.1 }], speed: 10, returnSpeed: 7, requires: CRUSHER },
-  { slot: 1, direction: 'down', name: 'Backswing', targets: [{ joint: 'crusher_shoulder', angle: -1.15 }, { joint: 'crusher_wrist', angle: -0.5 }], speed: 10, returnSpeed: 7, requires: CRUSHER },
-  // ---- slot 2: small claw
-  { slot: 2, direction: 'neutral', name: 'Claw thrust', targets: [{ joint: 'small_shoulder', angle: 0.05 }, { joint: 'small_wrist', angle: 0 }], speed: 15, returnSpeed: 9, requires: SMALL },
-  { slot: 2, direction: 'down', name: 'Pinch swing', targets: [{ joint: 'small_shoulder', angle: -1.4 }, { joint: 'small_wrist', angle: -1.1 }], speed: 13, returnSpeed: 9, requires: SMALL },
-  { slot: 2, direction: 'up', name: 'Backswing', targets: [{ joint: 'small_shoulder', angle: 1.1 }, { joint: 'small_wrist', angle: 0.5 }], speed: 13, returnSpeed: 9, requires: SMALL },
-  // ---- slot 3: both claws
   {
-    slot: 3, direction: 'neutral', name: 'Double thrust',
-    targets: [{ joint: 'crusher_shoulder', angle: 0 }, { joint: 'crusher_wrist', angle: 0 }, { joint: 'small_shoulder', angle: 0 }, { joint: 'small_wrist', angle: 0 }],
-    speed: 11, returnSpeed: 7, requires: [...CRUSHER, ...SMALL],
-  },
-  {
-    slot: 3, direction: 'back', name: 'Claw guard',
-    targets: [{ joint: 'crusher_shoulder', angle: 1.05 }, { joint: 'crusher_wrist', angle: 1.2 }, { joint: 'small_shoulder', angle: -1.05 }, { joint: 'small_wrist', angle: -1.2 }],
-    speed: 12, returnSpeed: 8, requires: ['crusher_arm', 'small_arm'],
-  },
-  // ---- slot 4: legs
-  {
-    slot: 4, direction: 'neutral', name: 'Leg kick',
-    targets: [
-      { joint: 'hip_leg_l1', angle: 0.5 }, { joint: 'hip_leg_l2', angle: 1.0 }, { joint: 'hip_leg_l3', angle: 1.5 },
-      { joint: 'hip_leg_r1', angle: -0.5 }, { joint: 'hip_leg_r2', angle: -1.0 }, { joint: 'hip_leg_r3', angle: -1.5 },
+    button: 'A', direction: 'neutral', name: 'Snip flurry',
+    description: 'Three quick pecks with the small claw.',
+    phases: [
+      { targets: SMALL_OUT, speed: 16, ticks: 7 },
+      { targets: SMALL_IN, speed: 16, ticks: 5 },
+      { targets: SMALL_OUT, speed: 16, ticks: 7 },
+      { targets: SMALL_IN, speed: 16, ticks: 5 },
+      { targets: SMALL_OUT, speed: 16, ticks: 7 },
     ],
-    speed: 16, returnSpeed: 9, requires: ['body'],
+    returnSpeed: 9, requires: SMALL,
   },
-  { slot: 4, direction: 'up', name: 'Shell turn', targets: [{ joint: 'crusher_shoulder', angle: 1.05 }, { joint: 'small_shoulder', angle: -1.05 }], speed: 12, returnSpeed: 8, requires: [...LEGS_L.slice(0, 1), ...LEGS_R.slice(0, 1)], spin: 7 },
-  { slot: 4, direction: 'down', name: 'Shell turn', targets: [{ joint: 'crusher_shoulder', angle: 1.05 }, { joint: 'small_shoulder', angle: -1.05 }], speed: 12, returnSpeed: 8, requires: [...LEGS_L.slice(0, 1), ...LEGS_R.slice(0, 1)], spin: -7 },
+  {
+    button: 'B', direction: 'neutral', name: 'Crusher slam',
+    description: 'Hold to draw the crusher out wide; release to slam it across the front.',
+    phases: [
+      { targets: CRUSHER_WIDE, speed: 10, ticks: 14, hold: true, maxHoldTicks: 90 },
+      { targets: CRUSHER_ACROSS, speed: 16, ticks: 16, spin: 3 },
+    ],
+    returnSpeed: 7, requires: CRUSHER,
+  },
+  {
+    button: 'A', direction: 'back', name: 'Turtle snap',
+    description: 'Hold to fold both claws over the front shell; release to fling them open.',
+    phases: [
+      { targets: CLAWS_FOLDED, speed: 12, ticks: 10, hold: true, maxHoldTicks: 240 },
+      { targets: CLAWS_WIDE, speed: 16, ticks: 12 },
+    ],
+    returnSpeed: 8, requires: ['crusher_arm', 'small_arm'],
+  },
+  {
+    button: 'B', direction: 'back', name: 'Sidle',
+    description: 'Scuttle sideways to the right, then swing the crusher back across their flank.',
+    phases: [
+      { targets: [{ joint: 'crusher_shoulder', angle: 1.05 }, { joint: 'crusher_wrist', angle: 1.2 }], speed: 12, ticks: 18, drive: [0, -4.5] },
+      { targets: CRUSHER_WIDE, speed: 12, ticks: 8 },
+      { targets: CRUSHER_ACROSS, speed: 15, ticks: 14, spin: 4 },
+    ],
+    returnSpeed: 7, requires: CRUSHER,
+  },
+  {
+    button: 'A', direction: 'forward', name: 'Shell ram',
+    description: 'Brace, then ram with the front shell. Pushes them toward the edge.',
+    phases: [
+      { targets: [{ joint: 'crusher_shoulder', angle: -0.6 }, { joint: 'small_shoulder', angle: 0.6 }], speed: 12, ticks: 8, drive: [-1.5, 0] },
+      { targets: [], speed: 12, ticks: 12, drive: [4, 0] },
+    ],
+    returnSpeed: 8, requires: ['shell_front'],
+  },
+  {
+    button: 'B', direction: 'forward', name: 'Scissor pinch',
+    description: 'Open both claws wide while stepping in, then snap them shut on whatever is between.',
+    phases: [
+      { targets: CLAWS_WIDE, speed: 12, ticks: 14, drive: [2.5, 0] },
+      { targets: [...CRUSHER_ACROSS, { joint: 'small_shoulder', angle: -1.4 }, { joint: 'small_wrist', angle: -1.1 }], speed: 18, ticks: 14 },
+    ],
+    returnSpeed: 7, requires: [...CRUSHER, ...SMALL],
+  },
 ];
 
 export const fighter: FighterDef = {
@@ -136,12 +172,6 @@ export const fighter: FighterDef = {
   joints,
   rootPart: 'body',
   corePart: 'body',
-  slots: [
-    { id: 1, name: 'Crusher claw', parts: CRUSHER },
-    { id: 2, name: 'Small claw', parts: SMALL },
-    { id: 3, name: 'Both claws', parts: [...CRUSHER, ...SMALL] },
-    { id: 4, name: 'Legs', parts: [...LEGS_L, ...LEGS_R] },
-  ],
   moves,
   locomotion: { walkSpeed: 2.7, walkForce: 300, turnSpeed: 3.8, turnTorque: 70, dashImpulse: 95 },
 };

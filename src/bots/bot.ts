@@ -10,13 +10,13 @@
  */
 import { distanceToRingOut } from '../core/arena';
 import { partAlive, posesFor } from '../core/fighter';
-import type { CompiledFighter } from '../core/fighter-compile';
-import { AimMode, Button, SLOT_BUTTONS, quantizeAxis, type InputFrame } from '../core/input-frame';
+import { subtree, type CompiledFighter } from '../core/fighter-compile';
+import { AimMode, ATTACK_BUTTONS, Button, quantizeAxis, type InputFrame } from '../core/input-frame';
 import { facingOf } from '../core/locomotion';
 import { atan2, clamp, cos, sin, type Vec2 } from '../core/math';
 import { moveAvailable } from '../core/moves';
 import { Rng, mixSeed } from '../core/rng';
-import type { FighterBotHints, MoveDirection } from '../core/schema/fighter-schema';
+import { MOVE_BUTTONS, type FighterBotHints, type MoveDirection } from '../core/schema/fighter-schema';
 import type { SimState } from '../core/state';
 import { botHintsFor } from '../registry/fighters';
 import { DIFFICULTIES, type Difficulty, type DifficultyId } from './difficulty';
@@ -25,17 +25,24 @@ import { DIFFICULTIES, type Difficulty, type DifficultyId } from './difficulty';
 
 interface MoveModel {
   index: number;
-  slot: number;
+  /** Attack button bit. */
+  button: number;
   direction: MoveDirection;
   name: string;
-  /** Position (root-local, facing +x) of the striking part in the move pose. */
+  /** Position (root-local, facing +x) of the striking part at the move's farthest point, including drive travel. */
   strike: Vec2;
-  /** The part doing the hitting (farthest slot part in the move pose). */
+  /** The part doing the hitting. */
   attackPart: number;
+  /** Ticks to keep the button held (through hold phases). */
   holdTicks: number;
+  /** Ticks until the move is over (no new move can start before). */
+  totalTicks: number;
   isGuard: boolean;
   isAttack: boolean;
+  /** Spins far enough to sweep a ring around the root. */
   spin: boolean;
+  /** Estimated body travel (root-local) from drive phases. */
+  travel: Vec2;
 }
 
 interface BotModel {
@@ -44,42 +51,80 @@ interface BotModel {
   shieldAngle: number;
 }
 
+/** Hold phases are held this long past their minimum (bots don't charge forever). */
+const BOT_EXTRA_HOLD = 8;
+const BOT_GUARD_HOLD = 30;
+
 function buildModel(cf: CompiledFighter, hints: FighterBotHints): BotModel {
   const def = cf.def;
   const idle = def.joints.map((j) => j.idleAngle);
   const moves = cf.moves.map((m) => {
-    const angles = [...idle];
-    let maxDelta = 0;
-    for (const t of m.targets) {
-      maxDelta = Math.max(maxDelta, Math.abs(t.angle - (idle[t.joint] ?? 0)));
-      angles[t.joint] = t.angle;
-    }
-    const poses = posesFor(cf, 0, 0, 0, angles);
-    const slot = def.slots.find((s) => s.id === m.slot);
-    const candidates = (slot?.parts ?? []).map((id) => cf.partIndex.get(id) ?? -1).filter((i) => i >= 0);
-    let attackPart = candidates[0] ?? cf.root;
-    let best = -1;
-    for (const p of candidates) {
-      const pose = poses[p]!;
-      const r = pose.x * pose.x + pose.y * pose.y;
-      if (r > best) {
-        best = r;
-        attackPart = p;
-      }
-    }
     const name = def.moves[m.index]!.name;
     const isGuard = hints.guardMoves.includes(name);
+    // Parts the move swings: everything below the joints it drives.
+    const swung = [...new Set(m.joints.flatMap((ji) => subtree(cf, cf.jointChild[ji] as number)))];
+    let attackPart = cf.root;
+    let strike: Vec2 = { x: 0, y: 0 };
+    let best = -Infinity;
+    let travelX = 0;
+    let travelY = 0;
+    let spinAngle = 0;
+    let holdTicks = 0;
+    let total = 0;
+    let holdSeen = false;
+    const allHold = m.phases.every((ph) => ph.hold);
+    let prev = [...idle];
+    for (const ph of m.phases) {
+      const extra = ph.hold ? (isGuard ? BOT_GUARD_HOLD : ph.spin !== null ? 0 : BOT_EXTRA_HOLD) : 0;
+      total += ph.ticks + extra;
+      if (!holdSeen) holdTicks += ph.ticks + extra;
+      if (ph.hold) holdSeen = true;
+      if (ph.drive) {
+        // Roughly 70 % of the commanded speed is reached on average (acceleration).
+        travelX += (ph.drive[0] * ph.ticks * 0.7) / 60;
+        travelY += (ph.drive[1] * ph.ticks * 0.7) / 60;
+      }
+      if (ph.spin !== null) spinAngle += (Math.abs(ph.spin) * ph.ticks) / 60;
+      const target = [...idle];
+      for (const t of ph.targets) target[t.joint] = t.angle;
+      const from = prev;
+      prev = target;
+      // Wind-ups and guards (hold phases) are not where a move hits, unless it is all holding.
+      if (ph.hold && !allHold && ph.spin === null) continue;
+      // A forward drive hits with whatever leads along it; otherwise the swung part reaching farthest.
+      const lunge = ph.drive !== null && ph.drive[0] > 2 ? ph.drive : null;
+      const ll = lunge ? Math.sqrt(lunge[0] * lunge[0] + lunge[1] * lunge[1]) : 1;
+      const candidates = lunge ? cf.bfsOrder : swung;
+      // Swings hit mid-arc as well as at the end: sample halfway and the final pose.
+      for (const frac of [0.5, 1]) {
+        const poses = posesFor(cf, 0, 0, 0, target.map((ang, ji) => from[ji]! + (ang - from[ji]!) * frac));
+        for (const pi of candidates) {
+          const pose = poses[pi]!;
+          const x = pose.x + travelX;
+          const y = pose.y + travelY;
+          const score = lunge ? 100 + (x * lunge[0] + y * lunge[1]) / ll : x * x + y * y;
+          if (score > best) {
+            best = score;
+            attackPart = pi;
+            strike = { x, y };
+          }
+        }
+      }
+    }
+    if (!holdSeen) holdTicks = 2;
     return {
       index: m.index,
-      slot: m.slot,
+      button: ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] as number,
       direction: m.direction,
       name,
-      strike: { x: poses[attackPart]!.x, y: poses[attackPart]!.y },
+      strike,
       attackPart,
-      holdTicks: Math.ceil((maxDelta / m.speed) * 60) + (m.spin !== null ? 36 : 6),
+      holdTicks,
+      totalTicks: total,
       isGuard,
       isAttack: !isGuard && (hints.attackMoves.length === 0 || hints.attackMoves.includes(name)),
-      spin: m.spin !== null,
+      spin: spinAngle > 3,
+      travel: { x: travelX, y: travelY },
     };
   });
   let sx = 0;
@@ -124,7 +169,7 @@ function observe(s: SimState, opp: number): Observation {
     oppCore: { x: parts[cf.core]!.x, y: parts[cf.core]!.y },
     oppRoot: { x: parts[cf.root]!.x, y: parts[cf.root]!.y },
     oppParts: parts,
-    oppHolding: f.slots.some((sl) => sl.held && sl.move >= 0),
+    oppHolding: f.action.move >= 0,
   };
 }
 
@@ -140,7 +185,8 @@ export interface BotMemory {
   aimNoise: number;
   /** Move to press next tick (-1 none). */
   pending: number;
-  heldSlot: number;
+  /** Attack button bit being held (-1 none). */
+  heldButton: number;
   holdUntil: number;
   attackReadyAt: number;
   dashDir: Vec2 | null;
@@ -154,7 +200,7 @@ export interface BotMemory {
 }
 
 export function createBotMemory(): BotMemory {
-  return { history: [], nextDecision: 0, mode: 'approach', strafeSign: 1, aimNoise: 0, pending: -1, heldSlot: -1, holdUntil: 0, attackReadyAt: 0, dashDir: null, prevButtons: 0, lastAttackTick: -1, progressHealth: Infinity, progressTick: 0, ramUntil: 0 };
+  return { history: [], nextDecision: 0, mode: 'approach', strafeSign: 1, aimNoise: 0, pending: -1, heldButton: -1, holdUntil: 0, attackReadyAt: 0, dashDir: null, prevButtons: 0, lastAttackTick: -1, progressHealth: Infinity, progressTick: 0, ramUntil: 0 };
 }
 
 // ------------------------------------------------------------------ the bot
@@ -191,13 +237,15 @@ const RAM_AFTER_TICKS = 300;
 const PROGRESS_HEALTH = 10;
 const NO_PROGRESS_TICKS = 900;
 const RAM_TICKS = 120;
+/** Moves whose drive would end closer than this (m) to our own ring-out edge are skipped. */
+const SAFE_EDGE = 1.0;
 
 const IDLE: InputFrame = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, aimMode: AimMode.AUTO, buttons: 0 };
 
 function dirVector(dir: MoveDirection, facing: number): Vec2 {
-  const rel = dir === 'forward' ? 0 : dir === 'back' ? 3.14159 : dir === 'up' ? 1.5708 : dir === 'down' ? -1.5708 : null;
-  if (rel === null) return { x: 0, y: 0 };
-  return { x: cos(facing + rel), y: sin(facing + rel) };
+  if (dir === 'neutral') return { x: 0, y: 0 };
+  const sign = dir === 'forward' ? 1 : -1;
+  return { x: sign * cos(facing), y: sign * sin(facing) };
 }
 
 /** Pure bot step: (state, fighter, memory, rng) -> input. */
@@ -209,7 +257,7 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
   const rootPart = me.parts[cf.root]!;
   if (g.phase !== 'fight' || rootPart.status !== 'attached' || g.fighters[opp]!.parts[s.ctx.compiled[opp]!.core]!.body < 0) {
     mem.history.length = 0;
-    mem.heldSlot = -1;
+    mem.heldButton = -1;
     mem.pending = -1;
     mem.prevButtons = 0;
     return { ...IDLE };
@@ -231,8 +279,16 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
   const arena = s.ctx.arena;
   const myCoreHp = me.parts[cf.core]!.health / cf.def.parts[cf.core]!.maxHealth;
 
+  /** Would this move's drive carry our core within SAFE_EDGE of our own ring-out edge? */
+  const drivesOut = (m: MoveModel): boolean => {
+    if (m.travel.x === 0 && m.travel.y === 0) return false;
+    const c = cos(facing);
+    const sn = sin(facing);
+    return distanceToRingOut(arena, corePose.x + m.travel.x * c - m.travel.y * sn, corePose.y + m.travel.x * sn + m.travel.y * c) < SAFE_EDGE;
+  };
+
   // ---- decisions
-  if (g.tick >= mem.nextDecision && mem.heldSlot < 0 && mem.pending < 0) {
+  if (g.tick >= mem.nextDecision && mem.heldButton < 0 && mem.pending < 0 && me.action.move < 0) {
     mem.nextDecision = g.tick + diff.decisionInterval;
     mem.aimNoise = rng.range(-diff.aimNoise, diff.aimNoise);
     if (diff.healthTrades) {
@@ -272,13 +328,13 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     if (g.tick >= mem.attackReadyAt) {
       const oppCf = s.ctx.compiled[opp]!;
       // Guard: one option, only when an enemy strike is coming and our core is in reach.
-      const guard = model.moves.find((m) => m.isGuard && moveAvailable(me, cf, m.index));
+      const guard = model.moves.find((m) => m.isGuard && moveAvailable(me, cf, m.index) && !drivesOut(m));
       const coreDist = Math.sqrt((seen.oppRoot.x - corePose.x) * (seen.oppRoot.x - corePose.x) + (seen.oppRoot.y - corePose.y) * (seen.oppRoot.y - corePose.y));
       if (guard && seen.oppHolding && coreDist < hints.reach + 0.6 && rng.chance(diff.guardChance)) {
         consider(0.45 + 0.9 * (1 - myCoreHp) + noise(), 'hold-distance', guard.index);
       }
       for (const m of model.moves) {
-        if (!m.isAttack || !moveAvailable(me, cf, m.index)) continue;
+        if (!m.isAttack || !moveAvailable(me, cf, m.index) || drivesOut(m)) continue;
         // Where the striking part ends up if the move were done now (facing the aim).
         // Spin moves sweep a full ring at the strike radius instead of one point.
         const c = cos(facing);
@@ -307,7 +363,7 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
           // The key strategy: hit with parts that can afford the equal damage.
           const mine = me.parts[m.attackPart]!.health;
           const theirs = seen.oppParts[nearest]!.health;
-          value += clamp((mine - theirs) / 60, -1, 1) * 0.8;
+          value += clamp((mine - theirs) / 60, -1, 1) * 0.4;
           if (mine < 20 && nearest !== oppCf.core) value -= 0.8;
         }
         consider(hit * value + noise(), 'hold-distance', m.index);
@@ -392,16 +448,13 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     buttons: 0,
   };
 
-  // ---- moves: press (with the right stick direction), hold, release
-  if (mem.heldSlot >= 0) {
-    if (g.tick < mem.holdUntil) out.buttons |= SLOT_BUTTONS[mem.heldSlot - 1]!;
-    else {
-      mem.heldSlot = -1;
-      mem.attackReadyAt = g.tick + 4 + rng.int(0, diff.timingNoise);
-    }
+  // ---- moves: press (with the right stick direction), hold through hold phases, release
+  if (mem.heldButton >= 0) {
+    if (g.tick < mem.holdUntil) out.buttons |= mem.heldButton;
+    else mem.heldButton = -1;
   } else if (mem.pending >= 0) {
     const m = model.moves[mem.pending]!;
-    const bit = SLOT_BUTTONS[m.slot - 1]!;
+    const bit = m.button;
     if (mem.prevButtons & bit) {
       // Must release before a new press registers.
     } else if (!moveAvailable(me, cf, m.index)) {
@@ -411,8 +464,10 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
       out.moveX = quantizeAxis(d.x);
       out.moveY = quantizeAxis(d.y);
       out.buttons |= bit;
-      mem.heldSlot = m.slot;
+      mem.heldButton = bit;
       mem.holdUntil = g.tick + m.holdTicks + rng.int(0, diff.timingNoise);
+      // The move plays out on its own; the next one waits until it is over.
+      mem.attackReadyAt = g.tick + m.totalTicks + (mem.holdUntil - g.tick - m.holdTicks) + 4 + rng.int(0, diff.timingNoise);
       mem.pending = -1;
     }
   } else if (mem.dashDir) {

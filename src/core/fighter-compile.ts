@@ -2,18 +2,32 @@
  * Precomputed index structures for a (validated) fighter definition: id -> index maps,
  * the part tree, resolved move targets. Built once per match, never serialized.
  */
-import type { FighterDef, MoveDirection } from './schema/fighter-schema';
+import type { FighterDef, MoveButton, MoveDirection } from './schema/fighter-schema';
+
+export interface CompiledPhase {
+  /** Accumulated targets: everything this phase and earlier phases of the move set (later wins). */
+  targets: { joint: number; angle: number; speed: number }[];
+  ticks: number;
+  hold: boolean;
+  maxHoldTicks: number | null;
+  spin: number | null;
+  drive: [number, number] | null;
+}
 
 export interface CompiledMove {
   index: number;
-  slot: number;
+  button: MoveButton;
   direction: MoveDirection;
-  targets: { joint: number; angle: number }[];
-  speed: number;
+  phases: CompiledPhase[];
+  /** Every joint any phase touches. */
+  joints: number[];
+  /** Sum of the phases' minimum ticks (no holding). */
+  totalTicks: number;
   returnSpeed: number;
   requires: number[];
-  spin: number | null;
 }
+
+export const moveKey = (button: MoveButton, dir: MoveDirection): string => `${button}/${dir}`;
 
 export interface CompiledFighter {
   def: FighterDef;
@@ -32,8 +46,8 @@ export interface CompiledFighter {
   jointParent: number[];
   jointChild: number[];
   moves: CompiledMove[];
-  /** moveBySlotDir[slotId][direction] = move index or -1. */
-  moveBySlotDir: Map<number, Map<MoveDirection, number>>;
+  /** moveByInput[moveKey(button, direction)] = move index. */
+  moveByInput: Map<string, number>;
   locomotionParts: number[];
   totalMass: number;
   totalHealth: number;
@@ -71,21 +85,37 @@ export function compileFighter(def: FighterDef): CompiledFighter {
     bfsOrder.push(p);
     for (const c of children[p] ?? []) queue.push(c);
   }
-  const moves: CompiledMove[] = def.moves.map((m, i) => ({
-    index: i,
-    slot: m.slot,
-    direction: m.direction,
-    targets: m.targets.map((t) => ({ joint: idx(jointIndex, t.joint, 'joint'), angle: t.angle })),
-    speed: m.speed,
-    returnSpeed: m.returnSpeed,
-    requires: m.requires.map((r) => idx(partIndex, r, 'part')),
-    spin: m.spin ?? null,
-  }));
-  const moveBySlotDir = new Map<number, Map<MoveDirection, number>>();
+  const moves: CompiledMove[] = def.moves.map((m, i) => {
+    const acc = new Map<number, { joint: number; angle: number; speed: number }>();
+    const phases = m.phases.map((p) => {
+      for (const t of p.targets) {
+        const j = idx(jointIndex, t.joint, 'joint');
+        acc.set(j, { joint: j, angle: t.angle, speed: p.speed });
+      }
+      return {
+        targets: [...acc.values()].sort((x, y) => x.joint - y.joint),
+        ticks: p.ticks,
+        hold: p.hold ?? false,
+        maxHoldTicks: p.maxHoldTicks ?? null,
+        spin: p.spin ?? null,
+        drive: p.drive ? ([p.drive[0], p.drive[1]] as [number, number]) : null,
+      };
+    });
+    return {
+      index: i,
+      button: m.button,
+      direction: m.direction,
+      phases,
+      joints: [...acc.keys()].sort((x, y) => x - y),
+      totalTicks: m.phases.reduce((a, p) => a + p.ticks, 0),
+      returnSpeed: m.returnSpeed,
+      requires: m.requires.map((r) => idx(partIndex, r, 'part')),
+    };
+  });
+  const moveByInput = new Map<string, number>();
   for (const m of moves) {
-    let byDir = moveBySlotDir.get(m.slot);
-    if (!byDir) moveBySlotDir.set(m.slot, (byDir = new Map()));
-    if (!byDir.has(m.direction)) byDir.set(m.direction, m.index);
+    const k = moveKey(m.button, m.direction);
+    if (!moveByInput.has(k)) moveByInput.set(k, m.index);
   }
   const locomotionParts = def.parts.flatMap((p, i) => (p.tags?.includes('locomotion') ? [i] : []));
   return {
@@ -101,7 +131,7 @@ export function compileFighter(def: FighterDef): CompiledFighter {
     jointParent,
     jointChild,
     moves,
-    moveBySlotDir,
+    moveByInput,
     locomotionParts,
     totalMass: def.parts.reduce((a, p) => a + p.mass, 0),
     totalHealth: def.parts.reduce((a, p) => a + p.maxHealth, 0),

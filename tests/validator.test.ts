@@ -33,7 +33,7 @@ describe('validator', () => {
   it('rejects disconnected parts', () => {
     const d = base();
     d.joints = d.joints.filter((j) => j.id !== 'wrist_l');
-    d.moves.forEach((m) => (m.targets = m.targets.filter((t) => t.joint !== 'wrist_l')));
+    d.moves.forEach((m) => m.phases.forEach((p) => (p.targets = p.targets.filter((t) => t.joint !== 'wrist_l'))));
     expectError(d, 'joints', 'part "hand_l" is not connected to the root');
   });
   it('rejects a part with two parents (not a tree)', () => {
@@ -41,17 +41,30 @@ describe('validator', () => {
     d.joints.push({ ...d.joints[1]!, id: 'extra', parent: 'head' });
     expectError(d, 'already has a parent joint');
   });
-  it('rejects more than 4 slots', () => {
+  it('requires exactly one move per button + direction', () => {
     const d = base();
-    d.slots.push({ id: 5, name: 'Fifth', parts: ['head'] });
-    expectError(d, 'slots', 'at most 4 slots');
+    d.moves[1]!.button = 'A'; // B/neutral now duplicates A/neutral
+    expectError(d, 'moves[1]', 'already uses neutral + A');
+    expectError(d, 'moves', 'missing a move for neutral + B');
+    const e = base();
+    e.moves.pop();
+    expectError(e, 'moves', 'exactly 6 moves are required (got 5)');
   });
-  it('rejects moves with unknown slots, joints or parts', () => {
+  it('rejects bad phases', () => {
     const d = base();
-    d.moves[0]!.slot = 9;
-    d.moves[1]!.targets[0]!.joint = 'knee';
+    d.moves[0]!.phases[0]!.ticks = 0;
+    d.moves[1]!.phases[1]!.maxHoldTicks = 10; // not a hold phase
+    d.moves[2]!.phases = [];
+    expectError(d, 'moves[0]', 'phases[0].ticks', 'between 1 and 240');
+    expectError(d, 'moves[1]', 'maxHoldTicks', 'only allowed on a hold phase');
+    expectError(d, 'moves[2]', 'phases', '1 to 8 phases');
+  });
+  it('rejects moves with unknown buttons, joints or parts', () => {
+    const d = base();
+    (d.moves[0] as { button: string }).button = 'C';
+    d.moves[1]!.phases[0]!.targets[0]!.joint = 'knee';
     d.moves[2]!.requires = ['tail'];
-    expectError(d, 'moves[0]', 'unknown slot 9');
+    expectError(d, 'moves[0]', 'button', 'must be one of A, B');
     expectError(d, 'moves[1]', 'unknown joint "knee"');
     expectError(d, 'moves[2]', 'unknown part "tail"');
   });
@@ -73,13 +86,8 @@ describe('validator', () => {
   });
   it('rejects move targets outside joint limits', () => {
     const d = base();
-    d.moves[0]!.targets[0]!.angle = 3.0;
+    d.moves[0]!.phases[0]!.targets[0]!.angle = 3.0;
     expectError(d, 'moves[0]', 'outside joint "shoulder_l" limits');
-  });
-  it('rejects more than 20 moves', () => {
-    const d = base();
-    while (d.moves.length <= 20) d.moves.push({ ...d.moves[0]!, slot: 1, direction: 'neutral' });
-    expectError(d, 'moves', 'at most 20 moves');
   });
   it('rejects unknown ability fields', () => {
     const d = base();

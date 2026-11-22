@@ -60,7 +60,8 @@ const joints: JointDef[] = TENTACLES.flatMap((t, ti) =>
 );
 
 /** Targets for a set of tentacles: base angle offset (toward +y when positive) and segment bend. */
-function pose(tentacles: number[], base: (t: number) => number, bend: (t: number) => number): MoveDef['targets'] {
+type Targets = MoveDef['phases'][number]['targets'];
+function pose(tentacles: number[], base: (t: number) => number, bend: (t: number) => number): Targets {
   return tentacles.flatMap((ti) => [
     { joint: joint(ti, 0), angle: clampAngle(base(ti)) },
     { joint: joint(ti, 1), angle: bend(ti) },
@@ -73,31 +74,66 @@ const side = (t: number): number => (A(t) > 0 ? 1 : -1);
 
 const FRONT = [0, 7];
 const SIDES = [1, 2, 5, 6];
-const REAR = [3, 4];
 const ALL = [0, 1, 2, 3, 4, 5, 6, 7];
+const idleBend = (t: number): number => 0.12 * side(t);
+const whip = (ts: number[]): Targets => pose(ts, (t) => 0.06 * side(t), () => 0);
+const rest = (ts: number[]): Targets => pose(ts, A, idleBend);
 
 const moves: MoveDef[] = [
-  // ---- slot 1: front tentacles
-  { slot: 1, direction: 'neutral', name: 'Whip', targets: pose(FRONT, (t) => 0.06 * side(t), () => 0), speed: 22, returnSpeed: 12, requires: req(FRONT) },
-  { slot: 1, direction: 'up', name: 'Sweep', targets: pose(FRONT, (t) => A(t) + 1.2, () => 0.3), speed: 16, returnSpeed: 10, requires: req(FRONT) },
-  { slot: 1, direction: 'down', name: 'Sweep', targets: pose(FRONT, (t) => A(t) - 1.2, () => -0.3), speed: 16, returnSpeed: 10, requires: req(FRONT) },
-  { slot: 1, direction: 'back', name: 'Curl guard', targets: pose(FRONT, (t) => 0.15 * side(t), (t) => -1.45 * side(t)), speed: 14, returnSpeed: 9, requires: req(FRONT) },
-  // ---- slot 2: side tentacles
-  { slot: 2, direction: 'neutral', name: 'Side whip', targets: pose(SIDES, (t) => A(t) - 0.9 * side(t), () => 0), speed: 18, returnSpeed: 10, requires: req(SIDES) },
-  { slot: 2, direction: 'up', name: 'Sweep', targets: pose(SIDES, (t) => A(t) + 1.1, () => 0.35), speed: 15, returnSpeed: 10, requires: req(SIDES) },
-  { slot: 2, direction: 'down', name: 'Sweep', targets: pose(SIDES, (t) => A(t) - 1.1, () => -0.35), speed: 15, returnSpeed: 10, requires: req(SIDES) },
-  { slot: 2, direction: 'back', name: 'Curl guard', targets: pose(SIDES, (t) => A(t) - 0.5 * side(t), (t) => -1.4 * side(t)), speed: 13, returnSpeed: 9, requires: req(SIDES) },
-  // ---- slot 3: rear tentacles
-  { slot: 3, direction: 'neutral', name: 'Rear whip', targets: pose(REAR, (t) => A(t) - 1.25 * side(t), () => 0), speed: 18, returnSpeed: 10, requires: req(REAR) },
-  { slot: 3, direction: 'back', name: 'Curl guard', targets: pose(REAR, (t) => A(t), (t) => 1.4 * side(t)), speed: 13, returnSpeed: 9, requires: req(REAR) },
-  // ---- slot 4: all tentacles
-  { slot: 4, direction: 'neutral', name: 'Spread', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'] },
-  { slot: 4, direction: 'back', name: 'Curl guard', targets: pose(ALL, (t) => A(t), (t) => -1.3 * side(t)), speed: 12, returnSpeed: 9, requires: ['mantle'] },
-  { slot: 4, direction: 'up', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: 10 },
-  { slot: 4, direction: 'down', name: 'Spin', targets: pose(ALL, (t) => A(t), () => 0), speed: 14, returnSpeed: 9, requires: ['mantle'], spin: -10 },
+  {
+    button: 'A', direction: 'neutral', name: 'Lash flurry',
+    description: 'The two front tentacles whip forward in turn.',
+    phases: [
+      { targets: whip([0]), speed: 22, ticks: 7 },
+      { targets: [...rest([0]), ...whip([7])], speed: 22, ticks: 7 },
+      { targets: [...rest([7]), ...whip([0])], speed: 22, ticks: 7 },
+      { targets: rest([0]), speed: 18, ticks: 4 },
+    ],
+    returnSpeed: 12, requires: req(FRONT),
+  },
+  {
+    button: 'B', direction: 'neutral', name: 'Coil crack',
+    description: 'Hold to coil the front tentacles back; release to crack them forward.',
+    phases: [
+      { targets: pose(FRONT, (t) => A(t) + 0.9 * side(t), (t) => 1.3 * side(t)), speed: 12, ticks: 14, hold: true, maxHoldTicks: 90 },
+      { targets: whip(FRONT), speed: 30, ticks: 12 },
+    ],
+    returnSpeed: 10, requires: req(FRONT),
+  },
+  {
+    button: 'A', direction: 'back', name: 'Jet retreat',
+    description: 'Jet backwards with the front tentacles curled over the mantle.',
+    phases: [{ targets: pose(FRONT, (t) => 0.15 * side(t), (t) => -1.45 * side(t)), speed: 14, ticks: 16, drive: [-7, 0] }],
+    returnSpeed: 9, requires: ['mantle'],
+  },
+  {
+    button: 'B', direction: 'back', name: 'Maelstrom',
+    description: 'Spread all eight tentacles and spin. Hold to keep spinning.',
+    phases: [
+      { targets: pose(ALL, A, () => 0), speed: 14, ticks: 6 },
+      { targets: [], speed: 14, ticks: 30, spin: 11, hold: true, maxHoldTicks: 90 },
+    ],
+    returnSpeed: 9, requires: ['mantle'],
+  },
+  {
+    button: 'A', direction: 'forward', name: 'Spear dive',
+    description: 'Sweep the side tentacles back and dive in, front tentacles first.',
+    phases: [
+      { targets: [...whip(FRONT), ...pose(SIDES, (t) => A(t) + 0.7 * side(t), () => 0)], speed: 16, ticks: 6 },
+      { targets: [], speed: 16, ticks: 10, drive: [6, 0] },
+    ],
+    returnSpeed: 10, requires: req(FRONT),
+  },
+  {
+    button: 'B', direction: 'forward', name: 'Embrace',
+    description: 'Reach around with six tentacles while stepping in, then squeeze them shut.',
+    phases: [
+      { targets: [...pose(FRONT, (t) => 0.5 * side(t), () => 0), ...pose([1, 6], (t) => 0.9 * side(t), () => 0), ...pose([2, 5], (t) => 1.2 * side(t), () => 0)], speed: 14, ticks: 12, drive: [3, 0] },
+      { targets: [...pose(FRONT, (t) => 0.1 * side(t), (t) => -1.4 * side(t)), ...pose([1, 6], (t) => 0.4 * side(t), (t) => -1.4 * side(t)), ...pose([2, 5], (t) => 0.8 * side(t), (t) => -1.4 * side(t))], speed: 18, ticks: 14 },
+    ],
+    returnSpeed: 9, requires: req([...FRONT, 1, 6]),
+  },
 ];
-
-const tentacleParts = (ts: number[]): string[] => ts.flatMap((t) => [0, 1, 2].map((s) => seg(t, s)));
 
 export const fighter: FighterDef = {
   id: 'octopus',
@@ -107,12 +143,6 @@ export const fighter: FighterDef = {
   joints,
   rootPart: 'mantle',
   corePart: 'mantle',
-  slots: [
-    { id: 1, name: 'Front tentacles', parts: tentacleParts(FRONT) },
-    { id: 2, name: 'Side tentacles', parts: tentacleParts(SIDES) },
-    { id: 3, name: 'Rear tentacles', parts: tentacleParts(REAR) },
-    { id: 4, name: 'All tentacles', parts: tentacleParts(ALL) },
-  ],
   moves,
   locomotion: { walkSpeed: 5.6, walkForce: 260, turnSpeed: 9, turnTorque: 36, dashImpulse: 85 },
 };

@@ -4,10 +4,10 @@
  */
 import type { Ability } from '../abilities/ability';
 import type { ArenaDef } from './arena-schema';
-import { MOVE_DIRECTIONS, type FighterDef, type ShapeDef } from './fighter-schema';
+import { MOVE_BUTTONS, MOVE_DIRECTIONS, type FighterDef, type ShapeDef } from './fighter-schema';
 
-const MAX_SLOTS = 4;
-const MAX_MOVES = 20;
+const MAX_PHASES = 8;
+const MAX_MOVE_TICKS = 300;
 const SAFE_ANGLE = 3.09; // joint angles must stay away from ±PI (Rapier measures in (-PI, PI])
 const ID_RE = /^[a-z][a-z0-9_-]*$/;
 
@@ -153,47 +153,55 @@ export function validateFighter(def: FighterDef, abilities: readonly Ability[] =
     }
   }
 
-  // ---------------------------------------------------------------- slots
-  const slots = Array.isArray(def.slots) ? def.slots : [];
-  if (slots.length === 0) r.err('slots', 'at least one slot is required');
-  if (slots.length > MAX_SLOTS) r.err('slots', `at most ${MAX_SLOTS} slots (got ${slots.length})`);
-  const slotIds = new Set<number>();
-  slots.forEach((s, i) => {
-    const f = `slots[${i}]`;
-    r.range(`${f}.id`, s.id, 1, MAX_SLOTS, true);
-    if (slotIds.has(s.id)) r.err(`${f}.id`, `duplicate slot id ${s.id}`);
-    slotIds.add(s.id);
-    if (!isStr(s.name)) r.err(`${f}.name`, 'must be a non-empty string');
-    if (!Array.isArray(s.parts) || s.parts.length === 0) r.err(`${f}.parts`, 'must list at least one part');
-    else s.parts.forEach((p, k) => !partIds.has(p) && r.err(`${f}.parts[${k}]`, `unknown part "${p}"`));
-  });
-
   // ---------------------------------------------------------------- moves
+  // Exactly six moves: one per attack button (A, B) × direction (neutral, back, forward).
   const moves = Array.isArray(def.moves) ? def.moves : [];
-  if (moves.length > MAX_MOVES) r.err('moves', `at most ${MAX_MOVES} moves (got ${moves.length})`);
-  const slotDir = new Set<string>();
+  const inputs = new Set<string>();
   moves.forEach((m, i) => {
     const f = `moves[${i}] ("${m.name}")`;
-    if (!slotIds.has(m.slot)) r.err(`${f}.slot`, `unknown slot ${m.slot}`);
+    if (!MOVE_BUTTONS.includes(m.button)) r.err(`${f}.button`, `must be one of ${MOVE_BUTTONS.join(', ')}`);
     if (!MOVE_DIRECTIONS.includes(m.direction)) r.err(`${f}.direction`, `must be one of ${MOVE_DIRECTIONS.join(', ')}`);
-    const sd = `${m.slot}/${m.direction}`;
-    if (slotDir.has(sd)) r.err(`${f}`, `another move already uses slot ${m.slot} + ${m.direction}`);
-    slotDir.add(sd);
+    const key = `${m.direction} + ${m.button}`;
+    if (inputs.has(key)) r.err(`${f}`, `another move already uses ${key}`);
+    inputs.add(key);
     if (!isStr(m.name)) r.err(`${f}.name`, 'must be a non-empty string');
-    if (!Array.isArray(m.targets) || m.targets.length === 0) r.err(`${f}.targets`, 'must have at least one joint target');
-    else
-      m.targets.forEach((t, k) => {
-        const j = jointById.get(t.joint);
-        if (!j) return r.err(`${f}.targets[${k}].joint`, `unknown joint "${t.joint}"`);
-        r.range(`${f}.targets[${k}].angle`, t.angle, -SAFE_ANGLE, SAFE_ANGLE);
-        if (j.limits && isNum(t.angle) && (t.angle < j.limits[0] || t.angle > j.limits[1])) r.err(`${f}.targets[${k}].angle`, `${t.angle} is outside joint "${t.joint}" limits [${j.limits[0]}, ${j.limits[1]}]`);
-      });
-    r.range(`${f}.speed`, m.speed, 0.1, 100);
+    if (!isStr(m.description)) r.err(`${f}.description`, 'must be a non-empty string');
     r.range(`${f}.returnSpeed`, m.returnSpeed, 0.1, 100);
     if (!Array.isArray(m.requires)) r.err(`${f}.requires`, 'must be an array of part ids');
     else m.requires.forEach((p, k) => !partIds.has(p) && r.err(`${f}.requires[${k}]`, `unknown part "${p}"`));
-    if (m.spin !== undefined) r.range(`${f}.spin`, m.spin, -40, 40);
+    const phases = Array.isArray(m.phases) ? m.phases : [];
+    if (phases.length < 1 || phases.length > MAX_PHASES) r.err(`${f}.phases`, `must have 1 to ${MAX_PHASES} phases (got ${phases.length})`);
+    let total = 0;
+    let anyTarget = false;
+    phases.forEach((ph, pi) => {
+      const pf = `${f}.phases[${pi}]`;
+      if (!Array.isArray(ph.targets)) return r.err(`${pf}.targets`, 'must be an array of joint targets');
+      ph.targets.forEach((t, k) => {
+        anyTarget = true;
+        const j = jointById.get(t.joint);
+        if (!j) return r.err(`${pf}.targets[${k}].joint`, `unknown joint "${t.joint}"`);
+        r.range(`${pf}.targets[${k}].angle`, t.angle, -SAFE_ANGLE, SAFE_ANGLE);
+        if (j.limits && isNum(t.angle) && (t.angle < j.limits[0] || t.angle > j.limits[1])) r.err(`${pf}.targets[${k}].angle`, `${t.angle} is outside joint "${t.joint}" limits [${j.limits[0]}, ${j.limits[1]}]`);
+      });
+      r.range(`${pf}.speed`, ph.speed, 0.1, 100);
+      r.range(`${pf}.ticks`, ph.ticks, 1, 240, true);
+      if (isNum(ph.ticks)) total += ph.ticks;
+      if (ph.maxHoldTicks !== undefined) {
+        if (!ph.hold) r.err(`${pf}.maxHoldTicks`, 'only allowed on a hold phase');
+        r.range(`${pf}.maxHoldTicks`, ph.maxHoldTicks, 1, 600, true);
+      }
+      if (ph.spin !== undefined) r.range(`${pf}.spin`, ph.spin, -40, 40);
+      if (ph.drive !== undefined) {
+        if (!Array.isArray(ph.drive) || ph.drive.length !== 2) r.err(`${pf}.drive`, 'must be [forward, left] in m/s');
+        else ph.drive.forEach((v, k) => r.range(`${pf}.drive[${k}]`, v, -15, 15));
+      }
+    });
+    if (total > MAX_MOVE_TICKS) r.err(`${f}.phases`, `total ticks must be at most ${MAX_MOVE_TICKS} (got ${total})`);
+    if (phases.length && !anyTarget && !phases.some((ph) => ph.spin !== undefined || ph.drive !== undefined)) r.err(`${f}.phases`, 'must move something (joint targets, spin or drive)');
   });
+  for (const b of MOVE_BUTTONS)
+    for (const d of MOVE_DIRECTIONS) if (!inputs.has(`${d} + ${b}`)) r.err('moves', `missing a move for ${d} + ${b} (every fighter has exactly ${MOVE_BUTTONS.length * MOVE_DIRECTIONS.length} moves)`);
+  if (moves.length !== MOVE_BUTTONS.length * MOVE_DIRECTIONS.length) r.err('moves', `exactly ${MOVE_BUTTONS.length * MOVE_DIRECTIONS.length} moves are required (got ${moves.length})`);
 
   // ---------------------------------------------------------------- locomotion
   const l = def.locomotion;

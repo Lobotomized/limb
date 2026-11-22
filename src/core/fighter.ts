@@ -78,7 +78,7 @@ export function buildFighter(physics: PhysicsWorld, cf: CompiledFighter, index: 
     defId: def.id,
     parts,
     joints,
-    slots: [0, 1, 2, 3].map(() => ({ held: false, move: -1, pressTick: -1 })),
+    action: { move: -1, phase: 0, phaseTick: 0, held: false, queued: -1, queuedTick: -1 },
     prevButtons: 0,
     dashCooldown: 0,
     aimAngle: spawn.angle,
@@ -131,15 +131,14 @@ export function killPart(s: SimState, fighter: number, part: number, sink: Event
     else sink.emit({ type: 'partDetached', ref: { fighter, part: q } });
     if (q === cf.core) coreLost = true;
   }
-  // Cancel held moves that need a lost part.
-  for (const slot of f.slots) {
-    if (slot.move < 0) continue;
-    const m = cf.moves[slot.move]!;
-    if (m.requires.some((r) => f.parts[r]!.status !== 'attached')) {
-      slot.move = -1;
-      slot.held = false;
-    }
+  // Cancel the active / buffered move if it needs a lost part.
+  const a = f.action;
+  const lost = (mi: number): boolean => cf.moves[mi]!.requires.some((r) => f.parts[r]!.status !== 'attached');
+  if (a.move >= 0 && lost(a.move)) {
+    a.move = -1;
+    a.held = false;
   }
+  if (a.queued >= 0 && lost(a.queued)) a.queued = -1;
   return { coreLost };
 }
 

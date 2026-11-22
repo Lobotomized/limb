@@ -32,13 +32,16 @@ targets / contact points / impact values, edit tuning live) and `?demo=humanoid,
 | --- | --- | --- | --- |
 | Move | W A S D | Arrow keys | Left stick |
 | Turn | Q / E (otherwise you face the opponent) | Numpad 7 / 9 (or , / .) | Right stick aims (release = face opponent) |
-| Limb slots 1–4 | F G H T | Numpad 1 2 3 5 (or J K L I) | A X Y B |
-| Dash | Left Shift | Numpad 0 (or Right Shift) | RB |
+| Attack A / B | F / G | Numpad 1 / 2 (or J / K) | X / Y |
+| Dash | Left Shift | Numpad 0 (or Right Shift) | RB or A |
 | Pause | Esc | Esc | Start |
 
-A move = **slot button + movement direction**, relative to where you face: *forward*, *back*, *left*,
-*right* or *neutral* (no direction). Hold the button to hold the pose; release to return. The
-fighter-select screen and the pause screen list every move. Device assignment (who uses which
+Every fighter has **six moves**: **A**, **B**, **Back + A**, **Back + B**, **Forward + A** and
+**Forward + B**. *Back*/*forward* is the movement stick at the moment you press, relative to where
+you face (sideways or no stick = plain A/B). A move is a little sequence — combos, wind-ups you hold
+and release, spins, lunges, hops and sidesteps — and plays out on its own; holding the button keeps
+a guard or a cocked swing going. A press during a move is buffered for the next one. The
+fighter-select screen lists every move with a one-line description. Device assignment (who uses which
 keyboard half or gamepad) is in Settings → P1/P2 controls. All bindings live in
 `src/input/bindings.ts`.
 

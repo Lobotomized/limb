@@ -39,11 +39,19 @@ export interface JointState {
   returnSpeed: number;
 }
 
-export interface SlotState {
-  held: boolean;
-  /** Index into def.moves of the move being held, -1 if none. */
+/** The move a fighter is performing (one at a time) and the next one buffered. */
+export interface ActionState {
+  /** Index into def.moves of the active move, -1 if none. */
   move: number;
-  pressTick: number;
+  /** Current phase of the active move. */
+  phase: number;
+  /** Ticks spent in the current phase. */
+  phaseTick: number;
+  /** True while the button that started the active move is still held. */
+  held: boolean;
+  /** Move pressed during the active one (starts when it ends, if still fresh), -1 if none. */
+  queued: number;
+  queuedTick: number;
 }
 
 export interface FighterStats {
@@ -60,7 +68,7 @@ export interface FighterState {
   defId: string;
   parts: PartState[];
   joints: JointState[];
-  slots: SlotState[];
+  action: ActionState;
   prevButtons: number;
   dashCooldown: number;
   /** Last facing target (radians), used when the aim stick is released. */

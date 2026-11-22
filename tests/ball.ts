@@ -17,7 +17,6 @@ export function ballFighter(id: string, mass: number, health: number, radius = 0
     joints: [],
     rootPart: 'ball',
     corePart: 'ball',
-    slots: [{ id: 1, name: 'None', parts: ['ball'] }],
     moves: [],
     locomotion: { walkSpeed: 1, walkForce: 1, turnSpeed: 1, turnTorque: 1, dashImpulse: 1 },
   };

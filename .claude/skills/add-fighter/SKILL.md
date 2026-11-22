@@ -1,6 +1,6 @@
 ---
 name: add-fighter
-description: Use when adding a new fighter (a new body shape with its own parts, joints, slots and moves) to Limb Clash. Covers the folder layout, schema, health budget, bot hints, visuals, validation and balancing runs.
+description: Use when adding a new fighter (a new body shape with its own parts, joints and six moves) to Limb Clash. Covers the folder layout, schema, health budget, bot hints, visuals, validation and balancing runs.
 ---
 
 # Add a fighter
@@ -25,10 +25,10 @@ validation, HUD body diagram, fighter-select preview, move list and bot support 
      relative angles in (-π, π]); point limbs so their poses avoid ±π.
    - `strength` = max motor torque (N·m); `damping` ≈ 5–10 % of strength is a good start.
    - Tag legs/tentacles/feet `locomotion` (speed scales with how many survive), heavy plates `armor`.
-   - ≤ 4 `slots` (ids 1–4), ≤ 20 `moves`, one move per slot+direction. Directions are relative to
-     facing: `forward`, `back`, `up` (left side), `down` (right side), `neutral`. A slot with no move
-     for a direction falls back to its `neutral` move. `requires` = parts that must be alive.
-   - Optional `spin` (rad/s) on a move makes the root spin while it is held.
+   - **Exactly six `moves`**: buttons `A`/`B` × directions `neutral`/`back`/`forward` (relative to
+     facing, at the press). Each move is a sequence of phases (targets, speed, ticks, optional
+     `hold`, `spin`, `drive`) — follow the add-move skill and make every move interesting, not a
+     plain directional poke. `requires` = parts that must be alive; give each a one-line `description`.
    - No `Math.sin/cos` in content (lint): precompute coordinates (see the crab/octopus files).
 3. **Health budget**: total `maxHealth` ≈ 800 (humanoid 849, octopus 784, crab ~690 + heavy armor).
    Remember equal damage: a part's health is what it can *trade*. Each part's max health also sets

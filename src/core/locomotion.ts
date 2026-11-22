@@ -36,7 +36,7 @@ export function attachedMass(f: FighterState, cf: CompiledFighter): number {
   return m;
 }
 
-export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spin: number | null, sink: EventSink): void {
+export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spin: number | null, drive: [number, number] | null, sink: EventSink): void {
   const f = s.game.fighters[fi]!;
   const cf = s.ctx.compiled[fi]!;
   const t = s.ctx.tuning;
@@ -59,14 +59,25 @@ export function updateLocomotion(s: SimState, fi: number, input: InputFrame, spi
     mx /= mag;
     my /= mag;
   }
-  if (mag >= t.stickDeadzone) {
-    const maxSpeed = loco.walkSpeed * speedShare;
-    const desiredX = mx * maxSpeed;
-    const desiredY = my * maxSpeed;
+  if (drive || mag >= t.stickDeadzone) {
+    let desiredX: number;
+    let desiredY: number;
+    let maxF = loco.walkForce * forceShare;
+    if (drive) {
+      // A move phase drives the body in its own frame (replaces walking for the phase).
+      const c = cos(pose.angle);
+      const sn = sin(pose.angle);
+      desiredX = (drive[0] * c - drive[1] * sn) * speedShare;
+      desiredY = (drive[0] * sn + drive[1] * c) * speedShare;
+      maxF *= t.driveForceScale;
+    } else {
+      const maxSpeed = loco.walkSpeed * speedShare;
+      desiredX = mx * maxSpeed;
+      desiredY = my * maxSpeed;
+    }
     let fx = (desiredX - vel.vx) * mass * t.steerGain;
     let fy = (desiredY - vel.vy) * mass * t.steerGain;
     const fl = Math.sqrt(fx * fx + fy * fy);
-    const maxF = loco.walkForce * forceShare;
     if (fl > maxF) {
       fx = (fx / fl) * maxF;
       fy = (fy / fl) * maxF;

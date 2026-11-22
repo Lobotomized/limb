@@ -14,9 +14,20 @@ One line each: decision — why.
 - Capsule `length` is tip-to-tip and capsules lie along the part's local x axis — limbs point "forward" along +x, which makes joint angles intuitive.
 - Joint angles (idle, limits, move targets) must stay within ±3.09 rad — Rapier measures revolute angles in (-π, π], so poses near ±π would flip sign.
 - Motors use Rapier's force-based position motor with target velocity = the commanded angle's rate of change — without it, motor damping drags limbs back and moves never reach their speed.
-- A move's direction is latched when its slot is pressed; if the slot has no move for that direction it falls back to the slot's neutral move — common fighting-game behavior and makes every slot always do something.
-- When several held slots target the same joint, the most recently pressed wins — deterministic and intuitive.
-- New generic schema field `MoveDef.spin` (rad/s while held) — needed for "spin attack" and "shell turn" without special-casing fighters.
+- Controls (six-move redesign): limb slots 1–4 replaced by two attack buttons A/B; every fighter has exactly six moves (A/B × neutral/back/forward), validated — the user's design; one fixed layout for every fighter.
+- Move direction is latched at the press from the movement stick relative to facing; forward/back when the stick's dot product with facing exceeds 0.38 (±~68°), anything sideways is neutral — up/down no longer exist, so diagonals toward/away from the opponent still count.
+- A move is a sequence of phases (targets, speed, ticks, optional hold/spin/drive) instead of one held pose — lets every move be a combo, a held wind-up, a guard that turns into a counter, a lunge or a spin, while still only moving the fighter's own parts (rule 6).
+- Phase targets accumulate within a move (a joint keeps the last target any earlier phase set) — later phases only list what changes.
+- One move at a time; a press during a move is buffered for 10 ticks and starts when it ends — commitment makes moves readable; the buffer keeps combos responsive.
+- `hold` phases continue while the starting button is held (cap `maxHoldTicks`, default 180) — one generic block for guards, cocked swings and held spins.
+- New generic phase field `drive: [forward, left]` (m/s, fighter frame) replaces walking during the phase, force up to 3× walkForce, scaled by surviving locomotion like walking — lunges, hops back and the crab's sidestep without special cases. `spin` moved from MoveDef to the phase.
+- Slots are gone from the schema; HUD/move list order is A, B, Back+A, Back+B, Fwd+A, Fwd+B with a one-line `description` per move.
+- Gamepad: X / Y = attacks A / B, A doubles as dash (with RB) — face buttons stay together and A (menu select) can't trigger an attack by accident when a match starts.
+- Bot: strike point = farthest swung part at the halfway and end pose of each non-hold phase (plus estimated drive travel; forward drives use the part leading along the drive); "spin" (ring scoring) only for ≥ half a turn; holds the button through hold phases (+8 ticks, guards +30, spins 0); never picks a move whose drive would end within 1 m of its own ring-out edge.
+- Bot health-trade weight halved (0.8 → 0.4) — with the new moves it made the octopus (21 HP segments) refuse every attack and lose ~95 % to the humanoid; at 0.4 it still prefers good trades.
+- Octopus bot uses neither Jet retreat (as a guard it fled whenever the opponent started a move) nor Spear dive (it drove the mantle into the opponent; humanoid vs octopus went 78 % → 57–62 % without it) — both stay player moves.
+- Crab Shell ram drive 4 m/s × 12 ticks — at 5.5 × 18 the crab rammed constantly (crab vs humanoid 85 %).
+- Long root-first drives were shortened (humanoid Lunging palms 5 m/s × 10 ticks with arms leading, crab Shell ram 4.5 × 12, octopus Spear dive 6 × 10) — torso/mantle collisions trade huge equal damage and made humanoid mirrors end in ~5 s draws.
 - Polygons must be convex and counter-clockwise (validated) — what is drawn is exactly what collides; no hidden hull computation.
 - If a part dies, only its parent joint is removed; its subtree leaves as one jointed chunk. If the root dies, everything (including the core) is detached, which loses the round — consistent with "parts attached only through the dead part also detach".
 - Forces are applied as impulses (force × dt) — Rapier's `addForce` persists across steps, impulses cannot leak between ticks.
@@ -77,3 +88,16 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - `sim:determinism` (20 matches × 3,000 ticks, twice + save/restore): identical. `sim:net` (0–200 ms RTT, up to 15 % loss, 40 ms jitter): all runs equal the offline simulation, max rollback ≤ 8.
 - Browser play-test (headless Chromium, scripted keyboard, mouse and mocked gamepad): every screen, local versus, vs bot to results, rematch, pause/quit, settings persistence, sandbox, online between two tabs through the signaling server (hashes match). No console errors.
 - Performance: per-frame CPU for simulation + draw-command building ≈ 2.5 ms median / 5 ms p95 in headless Chromium on this container (budget 16.7 ms). GPU time could not be measured (software rendering only).
+
+## Balance pass 2 — six-move controls (hard bots, 50 matches per pairing, seeds 1..50)
+
+| Matchup | A wins | B wins | Timeouts (6 min) | Draw rounds | Avg round |
+| --- | --- | --- | --- | --- | --- |
+| crab mirror (P1/P2) | 46% | 54% | 0 | 81 | 14.6 s |
+| crab vs humanoid | 58% | 42% | 0 | 47 | 8.1 s |
+| crab vs octopus | 30% | 70% | 0 | 44 | 21.5 s |
+| humanoid mirror (P1/P2) | 32% | 54% | 7 | 55 | 19.1 s |
+| humanoid vs octopus | 62% | 38% | 0 | 27 | 16.2 s |
+| octopus mirror (P1/P2) | 38% | 36% | 13 | 32 | 89.4 s |
+
+Known issues left: crab vs octopus is 30/70 (dropping Shell ram from the crab bot fixes it, 54/46, but pushes crab vs humanoid to 72/28); octopus mirrors are long and Maelstrom-heavy (its spin speed is capped by turn torque, so `spin` isn't a lever); crab–humanoid rounds are short (~8 s). Easy bots are lopsided (humanoid vs octopus 95/5 at easy, 20 matches).

@@ -5,7 +5,9 @@
  */
 import { Graphics } from 'pixi.js';
 import { createMatch, step } from '../core/simulation';
-import { emptyInput, SLOT_BUTTONS, type InputFrame } from '../core/input-frame';
+import { ATTACK_BUTTONS, emptyInput, type InputFrame } from '../core/input-frame';
+import { MOVE_BUTTONS } from '../core/schema/fighter-schema';
+import { moveInputLabel } from '../ui/fighter-preview';
 import type { SimState } from '../core/state';
 import { TUNING, type Tuning } from '../core/tuning';
 import { getArena } from '../registry/arenas';
@@ -67,7 +69,7 @@ export class Sandbox {
       return b;
     };
     const moves = el('div', 'col');
-    def.moves.forEach((m, i) => moves.append(btn(`${m.slot}/${m.direction} ${m.name}`, () => this.trigger(i))));
+    def.moves.forEach((m, i) => moves.append(btn(`${moveInputLabel(m)} ${m.name}`, () => this.trigger(i))));
     const tuning = el('div', 'col');
     for (const key of Object.keys(TUNING).sort() as (keyof Tuning)[]) {
       const input = el('input') as HTMLInputElement;
@@ -104,9 +106,10 @@ export class Sandbox {
   private trigger(move: number): void {
     const m = this.sim.ctx.compiled[0].moves[move]!;
     const f = this.sim.physics.pose(this.sim.game.fighters[0]!.parts[this.sim.ctx.compiled[0].root]!.body).angle;
-    const rel = { neutral: null, forward: 0, back: Math.PI, up: Math.PI / 2, down: -Math.PI / 2 }[m.direction];
+    const rel = { neutral: null, forward: 0, back: Math.PI }[m.direction];
     const stick: [number, number] = rel === null ? [0, 0] : [Math.round(cos(f + rel) * 127), Math.round(sin(f + rel) * 127)];
-    this.scripted = { move, left: 45, stick, first: true };
+    // Hold long enough to see hold phases (guards, wind-ups) before releasing.
+    this.scripted = { move, left: 50, stick, first: true };
   }
 
   frame(dtMs: number, keys: string[]): void {
@@ -116,7 +119,7 @@ export class Sandbox {
       let p1: InputFrame = this.game.devices.readSolo();
       if (this.scripted) {
         const m = this.sim.ctx.compiled[0].moves[this.scripted.move]!;
-        p1 = { ...p1, buttons: p1.buttons | SLOT_BUTTONS[m.slot - 1]! };
+        p1 = { ...p1, buttons: p1.buttons | ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)]! };
         if (this.scripted.first) {
           p1.moveX = this.scripted.stick[0];
           p1.moveY = this.scripted.stick[1];

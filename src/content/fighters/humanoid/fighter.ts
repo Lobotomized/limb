@@ -49,57 +49,80 @@ const joints: JointDef[] = [
 
 const L = ['upper_arm_l', 'forearm_l'];
 const R = ['upper_arm_r', 'forearm_r'];
+const ARMS = [...L, ...R];
+
+type T = MoveDef['phases'][number]['targets'];
+/** Both forearms raised across the face. */
+const COVER: T = [{ joint: 'shoulder_l', angle: 0.75 }, { joint: 'elbow_l', angle: -2.1 }, { joint: 'shoulder_r', angle: -0.75 }, { joint: 'elbow_r', angle: 2.1 }];
+const L_IDLE: T = [{ joint: 'shoulder_l', angle: 0.35 }, { joint: 'elbow_l', angle: -1.15 }];
+const R_IDLE: T = [{ joint: 'shoulder_r', angle: -0.35 }, { joint: 'elbow_r', angle: 1.15 }];
 
 const moves: MoveDef[] = [
-  // ---- slot 1: left arm
-  { slot: 1, direction: 'neutral', name: 'Jab', targets: [{ joint: 'shoulder_l', angle: 0.05 }, { joint: 'elbow_l', angle: 0 }, { joint: 'wrist_l', angle: 0 }], speed: 18, returnSpeed: 10, requires: L },
-  { slot: 1, direction: 'down', name: 'Hook', targets: [{ joint: 'shoulder_l', angle: -0.9 }, { joint: 'elbow_l', angle: -1.0 }], speed: 13, returnSpeed: 9, requires: L },
-  { slot: 1, direction: 'up', name: 'Backhand', targets: [{ joint: 'shoulder_l', angle: 1.9 }, { joint: 'elbow_l', angle: -0.1 }], speed: 14, returnSpeed: 9, requires: L },
-  // ---- slot 2: right arm (mirrored)
-  { slot: 2, direction: 'neutral', name: 'Jab', targets: [{ joint: 'shoulder_r', angle: -0.05 }, { joint: 'elbow_r', angle: 0 }, { joint: 'wrist_r', angle: 0 }], speed: 18, returnSpeed: 10, requires: R },
-  { slot: 2, direction: 'up', name: 'Hook', targets: [{ joint: 'shoulder_r', angle: 0.9 }, { joint: 'elbow_r', angle: 1.0 }], speed: 13, returnSpeed: 9, requires: R },
-  { slot: 2, direction: 'down', name: 'Backhand', targets: [{ joint: 'shoulder_r', angle: -1.9 }, { joint: 'elbow_r', angle: 0.1 }], speed: 14, returnSpeed: 9, requires: R },
-  // ---- slot 3: both arms
   {
-    slot: 3, direction: 'neutral', name: 'Double push',
-    targets: [{ joint: 'shoulder_l', angle: 0.12 }, { joint: 'elbow_l', angle: 0 }, { joint: 'shoulder_r', angle: -0.12 }, { joint: 'elbow_r', angle: 0 }],
-    speed: 11, returnSpeed: 8, requires: [...L, ...R],
+    button: 'A', direction: 'neutral', name: 'One-two',
+    description: 'Left jab, then a right cross. Quick and safe.',
+    phases: [
+      { targets: [{ joint: 'shoulder_l', angle: 0.05 }, { joint: 'elbow_l', angle: 0 }, { joint: 'wrist_l', angle: 0 }], speed: 18, ticks: 8 },
+      { targets: [...L_IDLE, { joint: 'shoulder_r', angle: -0.05 }, { joint: 'elbow_r', angle: 0 }, { joint: 'wrist_r', angle: 0 }], speed: 18, ticks: 10 },
+      { targets: R_IDLE, speed: 14, ticks: 4 },
+    ],
+    returnSpeed: 10, requires: ARMS,
   },
   {
-    slot: 3, direction: 'back', name: 'Guard',
-    targets: [{ joint: 'shoulder_l', angle: 0.75 }, { joint: 'elbow_l', angle: -2.1 }, { joint: 'shoulder_r', angle: -0.75 }, { joint: 'elbow_r', angle: 2.1 }],
-    speed: 16, returnSpeed: 10, requires: [L[1]!, R[1]!],
+    button: 'B', direction: 'neutral', name: 'Haymaker',
+    description: 'Hold to cock the right arm back; release to swing it across with the whole body.',
+    phases: [
+      { targets: [{ joint: 'shoulder_r', angle: -2.0 }, { joint: 'elbow_r', angle: 0.3 }], speed: 12, ticks: 12, hold: true, maxHoldTicks: 90 },
+      { targets: [{ joint: 'shoulder_r', angle: 1.0 }, { joint: 'elbow_r', angle: 0.4 }], speed: 20, ticks: 14, spin: 7 },
+    ],
+    returnSpeed: 8, requires: R,
   },
   {
-    slot: 3, direction: 'up', name: 'Spin attack',
-    targets: [{ joint: 'shoulder_l', angle: 1.5 }, { joint: 'elbow_l', angle: 0 }, { joint: 'shoulder_r', angle: -1.5 }, { joint: 'elbow_r', angle: 0 }],
-    speed: 12, returnSpeed: 8, requires: [...L, ...R, 'leg_l', 'leg_r'], spin: 11,
+    button: 'A', direction: 'back', name: 'Cover & part',
+    description: 'Hold to cover the head with both forearms; release to fling them apart and clear the way.',
+    phases: [
+      { targets: COVER, speed: 16, ticks: 8, hold: true, maxHoldTicks: 240 },
+      { targets: [{ joint: 'shoulder_l', angle: 1.4 }, { joint: 'elbow_l', angle: -0.3 }, { joint: 'shoulder_r', angle: -1.4 }, { joint: 'elbow_r', angle: 0.3 }], speed: 16, ticks: 12 },
+    ],
+    returnSpeed: 9, requires: ARMS,
   },
   {
-    slot: 3, direction: 'down', name: 'Spin attack',
-    targets: [{ joint: 'shoulder_l', angle: 1.5 }, { joint: 'elbow_l', angle: 0 }, { joint: 'shoulder_r', angle: -1.5 }, { joint: 'elbow_r', angle: 0 }],
-    speed: 12, returnSpeed: 8, requires: [...L, ...R, 'leg_l', 'leg_r'], spin: -11,
+    button: 'B', direction: 'back', name: 'Slip & counter',
+    description: 'Hop back out of reach behind a left guard, then step in with a right hook.',
+    phases: [
+      { targets: [{ joint: 'shoulder_l', angle: 0.75 }, { joint: 'elbow_l', angle: -2.1 }], speed: 16, ticks: 14, drive: [-5, 0] },
+      { targets: [...L_IDLE, { joint: 'shoulder_r', angle: 0.9 }, { joint: 'elbow_r', angle: 1.0 }], speed: 15, ticks: 14, drive: [4, 0] },
+    ],
+    returnSpeed: 9, requires: [...R, 'forearm_l'],
   },
-  // ---- slot 4: legs
-  { slot: 4, direction: 'neutral', name: 'Sweep kick', targets: [{ joint: 'hip_l', angle: 2.6 }], speed: 15, returnSpeed: 9, requires: ['leg_l'] },
-  { slot: 4, direction: 'up', name: 'Sweep kick', targets: [{ joint: 'hip_l', angle: 2.6 }], speed: 15, returnSpeed: 9, requires: ['leg_l'] },
-  { slot: 4, direction: 'down', name: 'Sweep kick', targets: [{ joint: 'hip_r', angle: -2.6 }], speed: 15, returnSpeed: 9, requires: ['leg_r'] },
+  {
+    button: 'A', direction: 'forward', name: 'Lunging palms',
+    description: 'Gather behind both forearms, then lunge in and thrust both palms. Shoves them toward the edge.',
+    phases: [
+      { targets: COVER, speed: 18, ticks: 6, drive: [-1, 0] },
+      { targets: [{ joint: 'shoulder_l', angle: 0.12 }, { joint: 'elbow_l', angle: 0 }, { joint: 'shoulder_r', angle: -0.12 }, { joint: 'elbow_r', angle: 0 }], speed: 16, ticks: 10, drive: [5, 0] },
+    ],
+    returnSpeed: 9, requires: ARMS,
+  },
+  {
+    button: 'B', direction: 'forward', name: 'Whirlwind',
+    description: 'Step in and spin a full turn with both arms flung out. Hits everything around.',
+    phases: [
+      { targets: [{ joint: 'shoulder_l', angle: 1.5 }, { joint: 'elbow_l', angle: 0 }, { joint: 'shoulder_r', angle: -1.5 }, { joint: 'elbow_r', angle: 0 }], speed: 14, ticks: 8, drive: [2.5, 0] },
+      { targets: [], speed: 14, ticks: 32, spin: 13, drive: [2, 0] },
+    ],
+    returnSpeed: 8, requires: [...ARMS, 'leg_l', 'leg_r'],
+  },
 ];
 
 export const fighter: FighterDef = {
   id: 'humanoid',
   name: 'Humanoid',
-  description: 'Balanced all-rounder. Fast jabs, a solid guard and a spinning finisher.',
+  description: 'Balanced all-rounder. Quick combos, a chargeable haymaker and a spinning finisher.',
   parts,
   joints,
   rootPart: 'torso',
   corePart: 'head',
-  slots: [
-    { id: 1, name: 'Left arm', parts: ['upper_arm_l', 'forearm_l', 'hand_l'] },
-    { id: 2, name: 'Right arm', parts: ['upper_arm_r', 'forearm_r', 'hand_r'] },
-    { id: 3, name: 'Both arms', parts: ['upper_arm_l', 'forearm_l', 'upper_arm_r', 'forearm_r'] },
-    { id: 4, name: 'Legs', parts: ['leg_l', 'leg_r'] },
-  ],
   moves,
   locomotion: { walkSpeed: 4.5, walkForce: 280, turnSpeed: 7, turnTorque: 45, dashImpulse: 70 },
 };

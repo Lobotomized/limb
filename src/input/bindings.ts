@@ -11,7 +11,8 @@ export interface KeyboardBinding {
   right: string[];
   turnLeft: string[];
   turnRight: string[];
-  slots: [string[], string[], string[], string[]];
+  /** Attack buttons A and B. */
+  attacks: [string[], string[]];
   dash: string[];
   /** Spare buttons for future abilities (ignored today). */
   actions: [string[], string[]];
@@ -21,7 +22,7 @@ export interface KeyboardBinding {
 export interface GamepadBinding {
   moveAxes: [number, number];
   aimAxes: [number, number];
-  slots: [number, number, number, number];
+  attacks: [number, number];
   dash: number[];
   actions: [number[], number[]];
   pause: number[];
@@ -37,7 +38,7 @@ export const KEYBOARD_P1: KeyboardBinding = {
   right: ['KeyD'],
   turnLeft: ['KeyQ'],
   turnRight: ['KeyE'],
-  slots: [['KeyF'], ['KeyG'], ['KeyH'], ['KeyT']],
+  attacks: [['KeyF'], ['KeyG']],
   dash: ['ShiftLeft'],
   actions: [['KeyR'], ['KeyV']],
   pause: ['Escape'],
@@ -53,18 +54,18 @@ export const KEYBOARD_P2: KeyboardBinding = {
   right: ['ArrowRight'],
   turnLeft: ['Numpad7', 'Comma'],
   turnRight: ['Numpad9', 'Period'],
-  slots: [['Numpad1', 'KeyJ'], ['Numpad2', 'KeyK'], ['Numpad3', 'KeyL'], ['Numpad5', 'KeyI']],
+  attacks: [['Numpad1', 'KeyJ'], ['Numpad2', 'KeyK']],
   dash: ['Numpad0', 'ShiftRight'],
   actions: [['NumpadAdd', 'KeyO'], ['NumpadEnter', 'KeyU']],
   pause: ['Escape'],
 };
 
-/** Twin-stick default: left stick move, right stick aim, A X Y B slots 1-4, RB dash, Start pause. */
+/** Twin-stick default: left stick move, right stick aim, X = attack A, Y = attack B, RB dash, Start pause. */
 export const GAMEPAD_DEFAULT: GamepadBinding = {
   moveAxes: [0, 1],
   aimAxes: [2, 3],
-  slots: [0, 2, 3, 1], // A, X, Y, B
-  dash: [5], // RB
+  attacks: [2, 3], // X, Y
+  dash: [5, 0], // RB, A
   actions: [[4], [7]], // LB, RT (spare)
   pause: [9], // Start
   deadzone: 0.25,

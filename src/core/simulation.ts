@@ -13,7 +13,7 @@ import { compileFighter } from './fighter-compile';
 import { ACTION_BUTTONS, EMPTY_INPUT, sanitizeInput, type InputFrame } from './input-frame';
 import { updateLocomotion, facingOf } from './locomotion';
 import { endRound, startRound, tickCountdown, tickRoundEnd } from './match';
-import { activeSpin, updateJoints, updateSlots } from './moves';
+import { activeDrive, activeSpin, updateJoints, updateMoves } from './moves';
 import { physicsReady, PhysicsWorld } from './physics';
 import { Rng } from './rng';
 import type { ArenaDef } from './schema/arena-schema';
@@ -208,14 +208,14 @@ export function step(s: SimState, rawInputs: readonly [InputFrame, InputFrame]):
     const f = g.fighters[fi]!;
     const cf = s.ctx.compiled[fi]!;
     const facing = f.parts[cf.root]!.status === 'attached' ? facingOf(s, fi) : 0;
-    updateSlots(s, fi, input, facing, sink);
+    updateMoves(s, fi, input, facing, sink);
     let actions = 0;
     ACTION_BUTTONS.forEach((bit, i) => {
       if (input.buttons & bit) actions |= 1 << i;
     });
     AbilityHooks.input(s, sink, fi, actions);
     updateJoints(s, fi);
-    updateLocomotion(s, fi, input, activeSpin(f, cf), sink);
+    updateLocomotion(s, fi, input, activeSpin(f, cf), activeDrive(f, cf), sink);
     f.prevButtons = input.buttons;
   }
 

@@ -20,45 +20,45 @@ describe('input frames', () => {
     expect(decodeInput(bytes)).toEqual(f);
   });
 
-  it('keyboard P1: WASD world-relative, Q/E turn, F G H T slots, Shift dash, spare actions', () => {
-    const f = kb(['KeyW', 'KeyD', 'KeyQ', 'KeyF', 'KeyT', 'ShiftLeft', 'KeyR']).read(KEYBOARD_P1);
+  it('keyboard P1: WASD world-relative, Q/E turn, F/G attacks A/B, Shift dash, spare actions', () => {
+    const f = kb(['KeyW', 'KeyD', 'KeyQ', 'KeyF', 'KeyG', 'ShiftLeft', 'KeyR']).read(KEYBOARD_P1);
     expect(f.moveX).toBeGreaterThan(80);
     expect(f.moveY).toBeGreaterThan(80); // up on screen = +y in the world
     expect(f.aimMode).toBe(AimMode.TURN_LEFT);
-    expect(f.buttons & Button.SLOT1).toBeTruthy();
-    expect(f.buttons & Button.SLOT4).toBeTruthy();
+    expect(f.buttons & Button.ATTACK_A).toBeTruthy();
+    expect(f.buttons & Button.ATTACK_B).toBeTruthy();
     expect(f.buttons & Button.DASH).toBeTruthy();
     expect(f.buttons & Button.ACTION1).toBeTruthy();
   });
 
   it('keyboard P2 numpad and no-numpad fallback', () => {
-    const a = kb(['ArrowLeft', 'Numpad9', 'Numpad5', 'Numpad0']).read(KEYBOARD_P2);
-    const b = kb(['ArrowLeft', 'Period', 'KeyI', 'ShiftRight']).read(KEYBOARD_P2);
+    const a = kb(['ArrowLeft', 'Numpad9', 'Numpad2', 'Numpad0']).read(KEYBOARD_P2);
+    const b = kb(['ArrowLeft', 'Period', 'KeyK', 'ShiftRight']).read(KEYBOARD_P2);
     expect(a).toEqual(b);
     expect(a.moveX).toBe(-127);
     expect(a.aimMode).toBe(AimMode.TURN_RIGHT);
-    expect(a.buttons).toBe(Button.SLOT4 | Button.DASH);
+    expect(a.buttons).toBe(Button.ATTACK_B | Button.DASH);
   });
 
-  it('gamepad twin-stick mapping: A X Y B = slots 1-4, RB dash, right stick aims', () => {
+  it('gamepad twin-stick mapping: X/Y = attacks A/B, RB or A dash, right stick aims', () => {
     const buttons = new Array(17).fill(false);
-    buttons[0] = true; // A
-    buttons[1] = true; // B
+    buttons[2] = true; // X
+    buttons[3] = true; // Y
     buttons[5] = true; // RB
     const f = padToInput({ index: 0, id: 'pad', axes: [1, 0, 0, -1], buttons }, GAMEPAD_DEFAULT);
     expect(f.moveX).toBe(127);
     expect(f.aimMode).toBe(AimMode.VECTOR);
     expect(f.aimY).toBe(127); // stick up = world +y
-    expect(f.buttons).toBe(Button.SLOT1 | Button.SLOT4 | Button.DASH);
+    expect(f.buttons).toBe(Button.ATTACK_A | Button.ATTACK_B | Button.DASH);
     const idle = padToInput({ index: 0, id: 'pad', axes: [0.1, 0.1, 0.05, 0], buttons: new Array(17).fill(false) }, GAMEPAD_DEFAULT);
     expect(idle).toEqual(emptyInput()); // deadzone; released aim stick = auto-face opponent
   });
 
   it('merges two devices for one player', () => {
-    const m = mergeInputs({ ...emptyInput(), moveX: 20, buttons: Button.SLOT1 }, { ...emptyInput(), moveX: -100, aimMode: AimMode.VECTOR, aimX: 5, buttons: Button.DASH });
+    const m = mergeInputs({ ...emptyInput(), moveX: 20, buttons: Button.ATTACK_A }, { ...emptyInput(), moveX: -100, aimMode: AimMode.VECTOR, aimX: 5, buttons: Button.DASH });
     expect(m.moveX).toBe(-100);
     expect(m.aimMode).toBe(AimMode.VECTOR);
-    expect(m.buttons).toBe(Button.SLOT1 | Button.DASH);
+    expect(m.buttons).toBe(Button.ATTACK_A | Button.DASH);
   });
 });
 

@@ -56,6 +56,16 @@ export const TUNING = {
   /** Return speed (rad/s) for joints with no move history. */
   defaultReturnSpeed: 8,
 
+  // ---- moves (core/moves.ts)
+  /** A press during an active move is buffered and starts when it ends, if at most this old. */
+  moveBufferTicks: 10,
+  /** Default cap on how long a `hold` phase can be held past its own ticks. */
+  moveMaxHoldTicks: 180,
+  /** Stick counts as forward/back when its direction's dot product with facing exceeds this (sideways = neutral). */
+  moveDirectionDot: 0.38,
+  /** Drive phases may push the root this many times harder than walking. */
+  driveForceScale: 3,
+
   // ---- locomotion (core/locomotion.ts)
   /** Proportional gain of the steering controller (1/s). */
   steerGain: 8,

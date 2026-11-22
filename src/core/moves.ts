@@ -1,30 +1,31 @@
 /**
- * Moves: slot + direction -> joint motor targets.
+ * Moves: attack button (A/B) + stick direction (neutral/back/forward) -> a sequence of phases.
  *
- * A move is chosen when its slot button is pressed, using the movement stick direction
- * relative to the fighter's facing. While held, its joint targets travel toward the move
- * pose at `speed`; on release they travel back to the idle pose at `returnSpeed`.
- * Moves only change motor targets. Physics does the rest.
+ * Every fighter has exactly six moves. Pressing a button starts the move for the stick
+ * direction at that moment (relative to facing; sideways counts as neutral). A fighter performs
+ * one move at a time: its phases play in order, each retargeting joints (and optionally
+ * spinning or driving the body); `hold` phases last while the button stays held. A press during
+ * a move is buffered and starts when the move ends. When the move ends, joints travel back to
+ * idle at `returnSpeed`. Moves only change motor targets and body drive. Physics does the rest.
  */
-import type { CompiledFighter } from './fighter-compile';
+import { moveKey, type CompiledFighter, type CompiledPhase } from './fighter-compile';
 import type { EventSink } from './events';
 import { partAlive } from './fighter';
-import { SLOT_BUTTONS, type InputFrame } from './input-frame';
-import { approach, atan2, angleDiff, PI } from './math';
-import type { MoveDirection } from './schema/fighter-schema';
+import { ATTACK_BUTTONS, type InputFrame } from './input-frame';
+import { approach, cos, sin } from './math';
+import { MOVE_BUTTONS, type MoveButton, type MoveDirection } from './schema/fighter-schema';
 import type { FighterState, SimState } from './state';
 
-/** Classifies the movement stick relative to facing. Neutral inside the deadzone. */
-export function stickDirection(input: InputFrame, facing: number, deadzone: number): MoveDirection {
+/** Classifies the movement stick relative to facing: forward, back, or neutral (deadzone / sideways). */
+export function stickDirection(input: InputFrame, facing: number, deadzone: number, dirDot: number): MoveDirection {
   const mx = input.moveX / 127;
   const my = input.moveY / 127;
-  if (mx * mx + my * my < deadzone * deadzone) return 'neutral';
-  const rel = angleDiff(facing, atan2(my, mx));
-  const q = PI / 4;
-  if (rel > -q && rel <= q) return 'forward';
-  if (rel > q && rel <= 3 * q) return 'up'; // fighter's left side
-  if (rel < -q && rel >= -3 * q) return 'down'; // fighter's right side
-  return 'back';
+  const len2 = mx * mx + my * my;
+  if (len2 < deadzone * deadzone) return 'neutral';
+  const dot = (mx * cos(facing) + my * sin(facing)) / Math.sqrt(len2);
+  if (dot > dirDot) return 'forward';
+  if (dot < -dirDot) return 'back';
+  return 'neutral';
 }
 
 /** A move is usable if every part it requires is alive and attached. */
@@ -33,64 +34,93 @@ export function moveAvailable(f: FighterState, cf: CompiledFighter, move: number
   return !!m && m.requires.every((r) => partAlive(f, r));
 }
 
-/** Resolves slot + direction to a move index (falls back to the slot's neutral move), or -1. */
-export function resolveMove(cf: CompiledFighter, slotId: number, dir: MoveDirection): number {
-  const byDir = cf.moveBySlotDir.get(slotId);
-  if (!byDir) return -1;
-  return byDir.get(dir) ?? byDir.get('neutral') ?? -1;
+/** Resolves button + direction to a move index, or -1. */
+export function resolveMove(cf: CompiledFighter, button: MoveButton, dir: MoveDirection): number {
+  return cf.moveByInput.get(moveKey(button, dir)) ?? -1;
 }
 
-/** Handles slot presses/releases for one fighter this tick. */
-export function updateSlots(s: SimState, fi: number, input: InputFrame, facing: number, sink: EventSink): void {
+/** The phase the fighter is in, or null when no move is active. */
+export function activePhase(f: FighterState, cf: CompiledFighter): CompiledPhase | null {
+  const a = f.action;
+  if (a.move < 0) return null;
+  return cf.moves[a.move]!.phases[a.phase] ?? null;
+}
+
+function startMove(s: SimState, fi: number, mi: number, held: boolean, sink: EventSink): void {
+  const f = s.game.fighters[fi]!;
+  const a = f.action;
+  a.move = mi;
+  a.phase = 0;
+  a.phaseTick = 0;
+  a.held = held;
+  a.queued = -1;
+  f.stats.moveUses[mi] = (f.stats.moveUses[mi] ?? 0) + 1;
+  sink.emit({ type: 'moveStarted', fighter: fi, move: mi });
+}
+
+/** Advances the active move, then handles attack-button presses for one fighter this tick. */
+export function updateMoves(s: SimState, fi: number, input: InputFrame, facing: number, sink: EventSink): void {
   const f = s.game.fighters[fi]!;
   const cf = s.ctx.compiled[fi]!;
-  const pressed = input.buttons & ~f.prevButtons;
-  for (let si = 0; si < 4; si++) {
-    const bit = SLOT_BUTTONS[si] as number;
-    const slot = f.slots[si]!;
-    const slotId = si + 1;
-    if (pressed & bit) {
-      const dir = stickDirection(input, facing, s.ctx.tuning.stickDeadzone);
-      const mi = resolveMove(cf, slotId, dir);
-      if (mi >= 0 && moveAvailable(f, cf, mi)) {
-        slot.held = true;
-        slot.move = mi;
-        slot.pressTick = s.game.tick;
-        f.stats.moveUses[mi] = (f.stats.moveUses[mi] ?? 0) + 1;
-        sink.emit({ type: 'moveStarted', fighter: fi, slot: slotId, move: mi });
-      } else {
-        // Unavailable move: pressing does nothing.
-        slot.held = false;
-        slot.move = -1;
+  const t = s.ctx.tuning;
+  const a = f.action;
+  const tick = s.game.tick;
+
+  // ---- advance the active move
+  if (a.move >= 0) {
+    const m = cf.moves[a.move]!;
+    a.held = a.held && (input.buttons & (ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] as number)) !== 0;
+    a.phaseTick++;
+    for (;;) {
+      const p = m.phases[a.phase];
+      if (!p) break;
+      if (a.phaseTick < p.ticks) break;
+      if (p.hold && a.held && a.phaseTick < p.ticks + (p.maxHoldTicks ?? t.moveMaxHoldTicks)) break;
+      a.phase++;
+      a.phaseTick = 0;
+    }
+    if (a.phase >= m.phases.length) {
+      a.move = -1;
+      a.held = false;
+      if (a.queued >= 0) {
+        const q = a.queued;
+        a.queued = -1;
+        if (tick - a.queuedTick <= t.moveBufferTicks && moveAvailable(f, cf, q)) {
+          const bit = ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(cf.moves[q]!.button)] as number;
+          startMove(s, fi, q, (input.buttons & bit) !== 0, sink);
+        }
       }
-    } else if (!(input.buttons & bit) && slot.held) {
-      slot.held = false;
-      // Keep slot.move so the joints know which return speed to use until re-targeted.
-      slot.move = -1;
     }
   }
-}
 
-/** Active moves in priority order: earlier presses first, later presses override shared joints. */
-export function activeMoves(f: FighterState): number[] {
-  return f.slots
-    .map((sl, i) => ({ sl, i }))
-    .filter(({ sl }) => sl.held && sl.move >= 0)
-    .sort((a, b) => a.sl.pressTick - b.sl.pressTick || a.i - b.i)
-    .map(({ sl }) => sl.move);
-}
-
-/** Spin override from the highest-priority held move that has one, or null. */
-export function activeSpin(f: FighterState, cf: CompiledFighter): number | null {
-  let spin: number | null = null;
-  for (const mi of activeMoves(f)) {
-    const m = cf.moves[mi]!;
-    if (m.spin !== null) spin = m.spin;
+  // ---- new presses (A before B if both land on the same tick)
+  const pressed = input.buttons & ~f.prevButtons;
+  for (let bi = 0; bi < MOVE_BUTTONS.length; bi++) {
+    const bit = ATTACK_BUTTONS[bi] as number;
+    if (!(pressed & bit)) continue;
+    const dir = stickDirection(input, facing, t.stickDeadzone, t.moveDirectionDot);
+    const mi = resolveMove(cf, MOVE_BUTTONS[bi]!, dir);
+    if (mi < 0 || !moveAvailable(f, cf, mi)) continue; // unavailable: pressing does nothing
+    if (a.move < 0) startMove(s, fi, mi, true, sink);
+    else if (a.queued < 0) {
+      a.queued = mi;
+      a.queuedTick = tick;
+    }
+    break;
   }
-  return spin;
 }
 
-/** Sets joint goals from the held moves and drives the motors at the limited speed. */
+/** Spin override of the active phase, or null. */
+export function activeSpin(f: FighterState, cf: CompiledFighter): number | null {
+  return activePhase(f, cf)?.spin ?? null;
+}
+
+/** Drive velocity [forward, left] (m/s, fighter frame) of the active phase, or null. */
+export function activeDrive(f: FighterState, cf: CompiledFighter): [number, number] | null {
+  return activePhase(f, cf)?.drive ?? null;
+}
+
+/** Sets joint goals from the active move phase and drives the motors at the limited speed. */
 export function updateJoints(s: SimState, fi: number): void {
   const f = s.game.fighters[fi]!;
   const cf = s.ctx.compiled[fi]!;
@@ -101,14 +131,15 @@ export function updateJoints(s: SimState, fi: number): void {
     j.goal = def.joints[ji]!.idleAngle;
     j.speed = j.returnSpeed;
   });
-  for (const mi of activeMoves(f)) {
-    const m = cf.moves[mi]!;
-    for (const tg of m.targets) {
+  const phase = activePhase(f, cf);
+  if (phase) {
+    const m = cf.moves[f.action.move]!;
+    for (const tg of phase.targets) {
       const j = f.joints[tg.joint]!;
       j.goal = tg.angle;
-      j.speed = m.speed;
-      j.returnSpeed = m.returnSpeed;
+      j.speed = tg.speed;
     }
+    for (const ji of m.joints) f.joints[ji]!.returnSpeed = m.returnSpeed;
   }
   const dt = 1 / t.ticksPerSecond;
   f.joints.forEach((j, ji) => {

@@ -34,7 +34,7 @@ export type SimEvent =
   | (Base & { type: 'roundOver'; round: number; winner: number | null; reason: 'core' | 'ringout' | 'draw'; wins: [number, number] })
   | (Base & { type: 'matchOver'; winner: number; wins: [number, number] })
   | (Base & { type: 'dash'; fighter: number })
-  | (Base & { type: 'moveStarted'; fighter: number; slot: number; move: number })
+  | (Base & { type: 'moveStarted'; fighter: number; move: number })
   | (Base & { type: 'debrisRemoved'; ref: PartRef })
   | (Base & { type: 'ability'; ability: string; data: unknown });
 
