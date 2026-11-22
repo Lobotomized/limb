@@ -514,19 +514,18 @@ export class FighterEditor {
       ),
       section(
         'Locomotion',
-        selectField(
-          'Steering',
-          [
-            { value: 'tank', label: 'Tank — up/down drive, left/right turn' },
-            { value: 'omni', label: 'Omni — stick moves in any direction (symmetric bodies)' },
-          ],
-          () => loco.steering ?? 'tank',
+        // One click switches the controls: symmetrical = stick moves in screen directions (omni),
+        // otherwise tank steering (up/down drives, left/right turns).
+        checkField(
+          'Is Symmetrical',
+          () => loco.steering === 'omni',
           (v) => {
-            if (v === 'tank') delete loco.steering;
-            else loco.steering = v;
+            if (v) loco.steering = 'omni';
+            else delete loco.steering;
           },
-          h,
+          this.structural, // re-render so the caption below follows
         ),
+        el('div', 't-caption ink-muted', loco.steering === 'omni' ? 'Symmetrical: the stick moves it in any screen direction.' : 'Has a front: up/down drives forward/back, left/right turns.'),
         numberField('Walk speed (m/s)', () => loco.walkSpeed, (v) => (loco.walkSpeed = v), h, { min: 0.5, max: 10, slider: true, step: 0.1 }),
         numberField('Walk force (N)', () => loco.walkForce, (v) => (loco.walkForce = v), h, { min: 50, max: 800, slider: true, step: 5 }),
         numberField('Turn speed (rad/s)', () => loco.turnSpeed, (v) => (loco.turnSpeed = v), h, { min: 0.5, max: 15, slider: true, step: 0.1 }),
