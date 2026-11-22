@@ -26,6 +26,13 @@ npm run dev
 Open http://localhost:5173. Dev builds add a **Sandbox** to the main menu (trigger moves, see joint
 targets / contact points / impact values, edit tuning live) and `?demo=humanoid,crab` (bot vs bot).
 
+**Fighter editor** (dev builds): main menu → *Fighter editor*, or http://localhost:5173/?editor.
+Create a fighter from a copy of an existing one, reshape its body (parts, joints, limits, mirror a
+limb to the other side), build its six moves phase by phase and watch them in a live physics
+preview (▶ Play, ghost of the selected phase), set its bot hints, and save. Problems are listed as
+you edit and must be fixed before saving. Saving writes `src/content/fighters/<id>/*.json` through
+the dev server; the game picks the fighter up immediately (Ctrl+S save, Ctrl+Z / Ctrl+Y undo/redo).
+
 ## How to play
 
 | | Player 1 keyboard | Player 2 keyboard | Gamepad (twin-stick) |

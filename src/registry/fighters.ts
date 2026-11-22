@@ -1,15 +1,32 @@
 /**
- * Fighter discovery. Every folder in src/content/fighters/ with a fighter.ts is a fighter;
- * visuals.ts and bot.ts are optional companions. Fighters are validated at load time and
- * sorted by id so the order is identical on every machine. There is no central list.
+ * Fighter discovery. Every folder in src/content/fighters/ with a fighter.json (written by the
+ * fighter editor) or a hand-written fighter.ts is a fighter; bot.json|ts and visuals.json|ts
+ * are optional companions. A folder may not have both the .json and the .ts of the same file.
+ * Fighters are validated at load time and sorted by id so the order is identical on every
+ * machine. There is no central list.
  */
 import type { BotHintsModule, FighterBotHints, FighterDef, FighterModule, FighterVisuals, VisualsModule } from '../core/schema/fighter-schema';
 import { validateFighter } from '../core/schema/validate';
 import { discoverAbilities } from '../core/abilities/registry';
 
-const fighterModules = import.meta.glob<FighterModule>('/src/content/fighters/*/fighter.ts', { eager: true });
-const visualsModules = import.meta.glob<VisualsModule>('/src/content/fighters/*/visuals.ts', { eager: true });
-const botModules = import.meta.glob<BotHintsModule>('/src/content/fighters/*/bot.ts', { eager: true });
+const fighterTs = import.meta.glob<FighterModule>('/src/content/fighters/*/fighter.ts', { eager: true });
+const visualsTs = import.meta.glob<VisualsModule>('/src/content/fighters/*/visuals.ts', { eager: true });
+const botTs = import.meta.glob<BotHintsModule>('/src/content/fighters/*/bot.ts', { eager: true });
+const fighterJson = import.meta.glob<FighterDef>('/src/content/fighters/*/fighter.json', { eager: true, import: 'default' });
+const visualsJson = import.meta.glob<FighterVisuals>('/src/content/fighters/*/visuals.json', { eager: true, import: 'default' });
+const botJson = import.meta.glob<FighterBotHints>('/src/content/fighters/*/bot.json', { eager: true, import: 'default' });
+
+/** Merges .ts modules and .json data into one module map keyed by folder path; both for one folder is an error. */
+export function mergeSources<M>(ts: Record<string, M>, json: Record<string, unknown>, wrap: (data: never) => M, file: string): Record<string, M> {
+  const out: Record<string, M> = {};
+  const tsFolders = new Set(Object.keys(ts).map(folderOf));
+  for (const [path, m] of Object.entries(ts)) out[path] = m;
+  for (const [path, data] of Object.entries(json)) {
+    if (tsFolders.has(folderOf(path))) throw new Error(`${path}: the folder also has ${file}.ts — keep only one of them`);
+    out[path] = wrap(structuredClone(data) as never);
+  }
+  return out;
+}
 
 export interface FighterEntry {
   def: FighterDef;
@@ -65,7 +82,11 @@ let cache: FighterEntry[] | null = null;
 
 /** All fighters in src/content/fighters, validated, sorted by id. */
 export function allFighters(): FighterEntry[] {
-  cache ??= loadFighterModules(fighterModules, visualsModules, botModules);
+  cache ??= loadFighterModules(
+    mergeSources(fighterTs, fighterJson, (fighter: FighterDef) => ({ fighter }), 'fighter'),
+    mergeSources(visualsTs, visualsJson, (visuals: FighterVisuals) => ({ visuals }), 'visuals'),
+    mergeSources(botTs, botJson, (botHints: FighterBotHints) => ({ botHints }), 'bot'),
+  );
   return cache;
 }
 

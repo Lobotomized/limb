@@ -9,6 +9,7 @@ export function mainMenu(host: UiHost) {
     { label: 'Settings', action: () => host.push(settingsScreen(host)) },
   ];
   if (host.isDev) items.push({ label: 'Sandbox', action: () => host.openSandbox() });
+  if (host.isDev) items.push({ label: 'Fighter editor', action: () => host.openEditor() });
   if (host.canQuitApp) items.push({ label: 'Quit', action: () => host.quitApp() });
   const s = host.screen(items, {});
   s.content.append(

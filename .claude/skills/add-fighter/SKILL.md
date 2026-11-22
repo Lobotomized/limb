@@ -8,13 +8,26 @@ description: Use when adding a new fighter (a new body shape with its own parts,
 A fighter is pure data in its own folder. **Nothing outside the folder changes** — discovery,
 validation, HUD body diagram, fighter-select preview, move list and bot support are automatic.
 
-## Steps
+## Fastest path: the fighter editor
+
+`npm run dev` → main menu → **Fighter editor** (or open `http://localhost:5173/?editor`).
+**New…** copies an existing fighter under a new id; reshape the body (select a part in the outline
+or click it in the preview; **Add limb here**, **Mirror to other side**, **Delete**), edit the six
+moves (phases, joint targets with sliders inside the joint limits, hold/spin/drive; **▶ Play** runs
+the move in the live physics preview, the outline ghost shows the selected phase) and bot hints.
+Problems from the validator are listed on the left (click one to jump to it); **Save** (Ctrl+S) is
+refused while there are any. Save writes `fighter.json`, `bot.json`, `visuals.json` into the
+folder through the dev server and the page reloads with the new content. Undo/redo: Ctrl+Z / Ctrl+Y.
+Then continue at step 6 below (tests, balance). The conventions in step 2 still apply.
+
+## Steps (by hand)
 
 1. **Create the folder** `src/content/fighters/<id>/` (`<id>`: lowercase, `a-z0-9_-`, starts with a
    letter; must equal `fighter.id`).
-2. **Write `fighter.ts`** exporting `fighter: FighterDef` (type-only import:
-   `import type { FighterDef } from '../../../core/schema/fighter-schema';`). Read the schema in
-   `src/core/schema/fighter-schema.ts` first. Conventions:
+2. **Write `fighter.json`** (a `FighterDef`, see `src/core/schema/fighter-schema.ts`; the existing
+   fighters are examples), or a `fighter.ts` exporting `fighter: FighterDef` if you want to compute
+   values in code (type-only import from the schema). A folder may not have both. The editor only
+   edits JSON fighters; `npm run fighters:json -- <id>` converts a `.ts` fighter. Conventions:
    - Meters, kg, radians. Seen from above, **facing +x**, `+y` is the fighter's LEFT side.
    - Exactly one `rootPart` (movement/turning act on it; its +x is the facing) and one `corePart`
      (they may be the same part). If the root dies, everything detaches → the core is lost.
@@ -29,7 +42,7 @@ validation, HUD body diagram, fighter-select preview, move list and bot support 
      facing, at the press). Each move is a sequence of phases (targets, speed, ticks, optional
      `hold`, `spin`, `drive`) — follow the add-move skill and make every move interesting, not a
      plain directional poke. `requires` = parts that must be alive; give each a one-line `description`.
-   - No `Math.sin/cos` in content (lint): precompute coordinates (see the crab/octopus files).
+   - No `Math.sin/cos` in `.ts` content (lint): precompute coordinates.
 3. **Health budget**: total `maxHealth` ≈ 800 (humanoid 849, octopus 784, crab ~690 + heavy armor).
    Remember equal damage: a part's health is what it can *trade*. Each part's max health also sets
    its **toughness tier** (`TOUGHNESS` in `src/render/theme.ts`: ≤ 40 fragile, 41–99 medium, ≥ 100
@@ -37,10 +50,10 @@ validation, HUD body diagram, fighter-select preview, move list and bot support 
    and a tier list on fighter select, and as bar length in the detailed HUD. Name mirrored parts
    "Left …"/"Right …" so the tier list can group them. Core health vs. the opponent's
    limb pool decides fights; a root that is not the core needs extra health.
-4. **Optional `bot.ts`** exporting `botHints: FighterBotHints` — `attackMoves`/`guardMoves` by move
+4. **Optional `bot.json`** (or `bot.ts` exporting `botHints`) with `FighterBotHints` — `attackMoves`/`guardMoves` by move
    name, `idealDistance` (m, root to enemy core), `reach`, `shieldParts` (presented toward the enemy).
    Without it, every move is treated as an attack.
-5. **Optional `visuals.ts`** exporting `visuals: FighterVisuals` (`tagline`). Colors always come from
+5. **Optional `visuals.json`** (or `visuals.ts` exporting `visuals`) with `FighterVisuals` (`tagline`). Colors always come from
    the theme (player colors); never put colors in content.
 6. **Validate**: `npx vitest run tests/fighters-validate.test.ts tests/movement.test.ts` — a test is
    generated for the new folder automatically (validation + walk/turn/dash/every move/locomotion loss).

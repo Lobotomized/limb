@@ -16,7 +16,9 @@ Every fighter has **exactly six moves**, one per input (validated):
 
 Direction is the movement stick at the moment of the press, relative to facing (sideways or no
 stick = `neutral`). You don't add moves, you replace one. Edit only the fighter's
-`src/content/fighters/<id>/fighter.ts` (and its `bot.ts` hints).
+`src/content/fighters/<id>/fighter.json` (and its `bot.json` hints) — easiest in the **Fighter
+editor** (`npm run dev` → main menu, or `?editor=<id>`): select the move, edit its phases, ▶ Play it
+in the live preview; the ghost outline shows the selected phase's pose.
 
 Moves only move the fighter's own parts (rule 6). Make each one **interesting**: a sequence, a
 wind-up you can hold, a body spin, a lunge or hop, a guard that turns into something. Avoid

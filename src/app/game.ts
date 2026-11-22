@@ -28,6 +28,7 @@ import { LocalDriver, type MatchDriver } from './drivers';
 import { MatchView, type MatchSetup } from './match';
 import { OnlineController } from './online';
 import { Sandbox } from './sandbox';
+import { clearEditorSession, editorSessionFolder, FighterEditor } from '../editor/editor';
 
 /** Delay between the match-over event and the results screen. */
 const RESULTS_DELAY_MS = 1500;
@@ -44,12 +45,13 @@ export class Game implements UiHost {
   readonly steamAvailable: boolean;
   private s: Settings = { ...DEFAULT_SETTINGS };
   readonly uiRoot = el('div', 'lc-root');
-  private readonly hudLayer = el('div', 'lc-layer');
+  readonly hudLayer = el('div', 'lc-layer');
   private readonly screenLayer = el('div', 'lc-layer');
   readonly stack = new ScreenStack(this.screenLayer);
   view!: ArenaView;
   match: MatchView | null = null;
   sandbox: Sandbox | null = null;
+  editor: FighterEditor | null = null;
   readonly online: OnlineController;
   private resultsShown = false;
   private seedCounter = 1;
@@ -84,6 +86,9 @@ export class Game implements UiHost {
       const [a, b] = demo.split(',');
       this.startDemo(a ?? 'humanoid', b ?? 'crab');
     }
+    // Dev-only fighter editor: ?editor[=<id>] opens it; it also reopens after a save reloads the page.
+    const editorParam = this.isDev ? new URLSearchParams(location.search).get('editor') : null;
+    if (this.isDev && !demo && (editorParam !== null || editorSessionFolder())) this.openEditor(editorParam || editorSessionFolder() || undefined);
     let last = performance.now();
     this.app.ticker.add(() => {
       const now = performance.now();
@@ -116,7 +121,9 @@ export class Game implements UiHost {
     setUiScale(this.uiRoot, uiScale(window.innerHeight, this.s.uiScale));
     this.online.frame();
 
-    if (this.sandbox) {
+    if (this.editor) {
+      this.editor.frame(dt);
+    } else if (this.sandbox) {
       this.sandbox.frame(dt, keys);
     } else if (this.match) {
       if (this.stack.size > 0) this.stack.handle(actions);
@@ -210,6 +217,29 @@ export class Game implements UiHost {
     this.endMatch();
     this.stack.clear();
     this.sandbox = new Sandbox(this, this.hudLayer);
+  }
+
+  /** Dev builds only: the visual fighter editor (saves through the dev server). */
+  openEditor(folder?: string): void {
+    if (!this.isDev) return;
+    this.endMatch();
+    this.stack.clear();
+    this.sandbox?.dispose();
+    this.sandbox = null;
+    this.editor = new FighterEditor(this, this.hudLayer, folder);
+    const url = new URL(location.href);
+    url.searchParams.set('editor', '');
+    history.replaceState(null, '', url.toString().replace('editor=', 'editor'));
+  }
+
+  closeEditor(): void {
+    this.editor?.dispose();
+    this.editor = null;
+    clearEditorSession();
+    const url = new URL(location.href);
+    url.searchParams.delete('editor');
+    history.replaceState(null, '', url.toString());
+    this.toMainMenu();
   }
 
   closeSandbox(): void {

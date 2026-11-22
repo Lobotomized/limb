@@ -1,0 +1,537 @@
+{
+  "id": "crab",
+  "name": "Crab",
+  "description": "Heavy shell, big crusher claw. Slow, tanky, and weak from behind.",
+  "parts": [
+    {
+      "id": "body",
+      "name": "Inner body",
+      "shape": {"kind": "circle", "radius": 0.22},
+      "mass": 3,
+      "maxHealth": 130
+    },
+    {
+      "id": "shell_front",
+      "name": "Front shell",
+      "shape": {
+        "kind": "polygon",
+        "points": [
+          [0.186, -0.167],
+          [0.349, -0.314],
+          [0.439, -0.168],
+          [0.47, 0],
+          [0.439, 0.168],
+          [0.349, 0.314],
+          [0.186, 0.167]
+        ]
+      },
+      "mass": 3.5,
+      "maxHealth": 78,
+      "tags": ["armor"]
+    },
+    {
+      "id": "shell_left",
+      "name": "Left shell",
+      "shape": {
+        "kind": "polygon",
+        "points": [
+          [0.186, 0.167],
+          [0.334, 0.301],
+          [0.194, 0.406],
+          [0.024, 0.449],
+          [-0.15, 0.424],
+          [-0.301, 0.334],
+          [-0.167, 0.186]
+        ]
+      },
+      "mass": 3,
+      "maxHealth": 55,
+      "tags": ["armor"]
+    },
+    {
+      "id": "shell_right",
+      "name": "Right shell",
+      "shape": {
+        "kind": "polygon",
+        "points": [
+          [-0.167, -0.186],
+          [-0.301, -0.334],
+          [-0.15, -0.424],
+          [0.024, -0.449],
+          [0.194, -0.406],
+          [0.334, -0.301],
+          [0.186, -0.167]
+        ]
+      },
+      "mass": 3,
+      "maxHealth": 55,
+      "tags": ["armor"]
+    },
+    {
+      "id": "shell_back",
+      "name": "Back shell",
+      "shape": {
+        "kind": "polygon",
+        "points": [
+          [-0.167, 0.186],
+          [-0.268, 0.297],
+          [-0.365, 0.163],
+          [-0.4, 0],
+          [-0.365, -0.163],
+          [-0.268, -0.297],
+          [-0.167, -0.186]
+        ]
+      },
+      "mass": 2.5,
+      "maxHealth": 30,
+      "tags": ["armor"]
+    },
+    {
+      "id": "crusher_arm",
+      "name": "Crusher arm",
+      "shape": {"kind": "capsule", "length": 0.38, "radius": 0.08},
+      "mass": 1.2,
+      "maxHealth": 55
+    },
+    {
+      "id": "crusher",
+      "name": "Crusher claw",
+      "shape": {
+        "kind": "polygon",
+        "points": [[0, -0.11], [0.3, -0.15], [0.44, -0.05], [0.4, 0.07], [0.05, 0.12]]
+      },
+      "mass": 1.9,
+      "maxHealth": 80
+    },
+    {
+      "id": "small_arm",
+      "name": "Small claw arm",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.065},
+      "mass": 0.9,
+      "maxHealth": 45
+    },
+    {
+      "id": "small_claw",
+      "name": "Small claw",
+      "shape": {
+        "kind": "polygon",
+        "points": [[0, -0.07], [0.26, -0.06], [0.32, 0.02], [0.24, 0.09], [0.02, 0.08]]
+      },
+      "mass": 1.1,
+      "maxHealth": 55
+    },
+    {
+      "id": "leg_l1",
+      "name": "Left leg 1",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "leg_l2",
+      "name": "Left leg 2",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "leg_l3",
+      "name": "Left leg 3",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "leg_r1",
+      "name": "Right leg 1",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "leg_r2",
+      "name": "Right leg 2",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "leg_r3",
+      "name": "Right leg 3",
+      "shape": {"kind": "capsule", "length": 0.42, "radius": 0.05},
+      "mass": 0.35,
+      "maxHealth": 18,
+      "tags": ["locomotion"]
+    }
+  ],
+  "joints": [
+    {
+      "id": "weld_shell_front",
+      "parent": "body",
+      "child": "shell_front",
+      "anchorParent": [0, 0],
+      "anchorChild": [0, 0],
+      "limits": [-0.05, 0.05],
+      "strength": 900,
+      "damping": 30,
+      "idleAngle": 0
+    },
+    {
+      "id": "weld_shell_left",
+      "parent": "body",
+      "child": "shell_left",
+      "anchorParent": [0, 0],
+      "anchorChild": [0, 0],
+      "limits": [-0.05, 0.05],
+      "strength": 900,
+      "damping": 30,
+      "idleAngle": 0
+    },
+    {
+      "id": "weld_shell_right",
+      "parent": "body",
+      "child": "shell_right",
+      "anchorParent": [0, 0],
+      "anchorChild": [0, 0],
+      "limits": [-0.05, 0.05],
+      "strength": 900,
+      "damping": 30,
+      "idleAngle": 0
+    },
+    {
+      "id": "weld_shell_back",
+      "parent": "body",
+      "child": "shell_back",
+      "anchorParent": [0, 0],
+      "anchorChild": [0, 0],
+      "limits": [-0.05, 0.05],
+      "strength": 900,
+      "damping": 30,
+      "idleAngle": 0
+    },
+    {
+      "id": "crusher_shoulder",
+      "parent": "body",
+      "child": "crusher_arm",
+      "anchorParent": [0.3, -0.37],
+      "anchorChild": [-0.16, 0],
+      "limits": [-1.2, 1.5],
+      "strength": 115,
+      "damping": 9,
+      "idleAngle": 0.25
+    },
+    {
+      "id": "crusher_wrist",
+      "parent": "crusher_arm",
+      "child": "crusher",
+      "anchorParent": [0.16, 0],
+      "anchorChild": [0.02, 0],
+      "limits": [-0.6, 1.3],
+      "strength": 110,
+      "damping": 7,
+      "idleAngle": 0.35
+    },
+    {
+      "id": "small_shoulder",
+      "parent": "body",
+      "child": "small_arm",
+      "anchorParent": [0.3, 0.37],
+      "anchorChild": [-0.13, 0],
+      "limits": [-1.5, 1.2],
+      "strength": 100,
+      "damping": 6,
+      "idleAngle": -0.25
+    },
+    {
+      "id": "small_wrist",
+      "parent": "small_arm",
+      "child": "small_claw",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [0.02, 0],
+      "limits": [-1.3, 0.6],
+      "strength": 70,
+      "damping": 4,
+      "idleAngle": -0.35
+    },
+    {
+      "id": "hip_leg_l1",
+      "parent": "body",
+      "child": "leg_l1",
+      "anchorParent": [0.1, 0.3],
+      "anchorChild": [-0.18, 0],
+      "limits": [0.45, 2.05],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": 1.25
+    },
+    {
+      "id": "hip_leg_l2",
+      "parent": "body",
+      "child": "leg_l2",
+      "anchorParent": [-0.05, 0.32],
+      "anchorChild": [-0.18, 0],
+      "limits": [0.95, 2.55],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": 1.75
+    },
+    {
+      "id": "hip_leg_l3",
+      "parent": "body",
+      "child": "leg_l3",
+      "anchorParent": [-0.2, 0.28],
+      "anchorChild": [-0.18, 0],
+      "limits": [1.45, 3.05],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": 2.25
+    },
+    {
+      "id": "hip_leg_r1",
+      "parent": "body",
+      "child": "leg_r1",
+      "anchorParent": [0.1, -0.3],
+      "anchorChild": [-0.18, 0],
+      "limits": [-2.05, -0.45],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": -1.25
+    },
+    {
+      "id": "hip_leg_r2",
+      "parent": "body",
+      "child": "leg_r2",
+      "anchorParent": [-0.05, -0.32],
+      "anchorChild": [-0.18, 0],
+      "limits": [-2.55, -0.95],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": -1.75
+    },
+    {
+      "id": "hip_leg_r3",
+      "parent": "body",
+      "child": "leg_r3",
+      "anchorParent": [-0.2, -0.28],
+      "anchorChild": [-0.18, 0],
+      "limits": [-3.05, -1.45],
+      "strength": 30,
+      "damping": 1.5,
+      "idleAngle": -2.25
+    }
+  ],
+  "rootPart": "body",
+  "corePart": "body",
+  "moves": [
+    {
+      "button": "A",
+      "direction": "neutral",
+      "name": "Snip flurry",
+      "description": "Three quick pecks with the small claw.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "small_shoulder", "angle": 0.05},
+            {"joint": "small_wrist", "angle": 0}
+          ],
+          "speed": 16,
+          "ticks": 7
+        },
+        {
+          "targets": [
+            {"joint": "small_shoulder", "angle": -0.45},
+            {"joint": "small_wrist", "angle": -0.6}
+          ],
+          "speed": 16,
+          "ticks": 5
+        },
+        {
+          "targets": [
+            {"joint": "small_shoulder", "angle": 0.05},
+            {"joint": "small_wrist", "angle": 0}
+          ],
+          "speed": 16,
+          "ticks": 7
+        },
+        {
+          "targets": [
+            {"joint": "small_shoulder", "angle": -0.45},
+            {"joint": "small_wrist", "angle": -0.6}
+          ],
+          "speed": 16,
+          "ticks": 5
+        },
+        {
+          "targets": [
+            {"joint": "small_shoulder", "angle": 0.05},
+            {"joint": "small_wrist", "angle": 0}
+          ],
+          "speed": 16,
+          "ticks": 7
+        }
+      ],
+      "returnSpeed": 9,
+      "requires": ["small_arm", "small_claw"]
+    },
+    {
+      "button": "B",
+      "direction": "neutral",
+      "name": "Crusher slam",
+      "description": "Hold to draw the crusher out wide; release to slam it across the front.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": -1.15},
+            {"joint": "crusher_wrist", "angle": -0.5}
+          ],
+          "speed": 10,
+          "ticks": 14,
+          "hold": true,
+          "maxHoldTicks": 90
+        },
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": 1.4},
+            {"joint": "crusher_wrist", "angle": 1.1}
+          ],
+          "speed": 16,
+          "ticks": 16,
+          "spin": 3
+        }
+      ],
+      "returnSpeed": 7,
+      "requires": ["crusher_arm", "crusher"]
+    },
+    {
+      "button": "A",
+      "direction": "back",
+      "name": "Turtle snap",
+      "description": "Hold to fold both claws over the front shell; release to fling them open.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": 1.05},
+            {"joint": "crusher_wrist", "angle": 1.2},
+            {"joint": "small_shoulder", "angle": -1.05},
+            {"joint": "small_wrist", "angle": -1.2}
+          ],
+          "speed": 12,
+          "ticks": 10,
+          "hold": true,
+          "maxHoldTicks": 240
+        },
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": -1.15},
+            {"joint": "crusher_wrist", "angle": -0.5},
+            {"joint": "small_shoulder", "angle": 1.1},
+            {"joint": "small_wrist", "angle": 0.5}
+          ],
+          "speed": 16,
+          "ticks": 12
+        }
+      ],
+      "returnSpeed": 8,
+      "requires": ["crusher_arm", "small_arm"]
+    },
+    {
+      "button": "B",
+      "direction": "back",
+      "name": "Sidle",
+      "description": "Scuttle sideways to the right, then swing the crusher back across their flank.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": 1.05},
+            {"joint": "crusher_wrist", "angle": 1.2}
+          ],
+          "speed": 12,
+          "ticks": 18,
+          "drive": [0, -4.5]
+        },
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": -1.15},
+            {"joint": "crusher_wrist", "angle": -0.5}
+          ],
+          "speed": 12,
+          "ticks": 8
+        },
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": 1.4},
+            {"joint": "crusher_wrist", "angle": 1.1}
+          ],
+          "speed": 15,
+          "ticks": 14,
+          "spin": 4
+        }
+      ],
+      "returnSpeed": 7,
+      "requires": ["crusher_arm", "crusher"]
+    },
+    {
+      "button": "A",
+      "direction": "forward",
+      "name": "Shell ram",
+      "description": "Brace, then ram with the front shell. Pushes them toward the edge.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": -0.6},
+            {"joint": "small_shoulder", "angle": 0.6}
+          ],
+          "speed": 12,
+          "ticks": 8,
+          "drive": [-1.5, 0]
+        },
+        {"targets": [], "speed": 12, "ticks": 12, "drive": [4, 0]}
+      ],
+      "returnSpeed": 8,
+      "requires": ["shell_front"]
+    },
+    {
+      "button": "B",
+      "direction": "forward",
+      "name": "Scissor pinch",
+      "description": "Open both claws wide while stepping in, then snap them shut on whatever is between.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": -1.15},
+            {"joint": "crusher_wrist", "angle": -0.5},
+            {"joint": "small_shoulder", "angle": 1.1},
+            {"joint": "small_wrist", "angle": 0.5}
+          ],
+          "speed": 12,
+          "ticks": 14,
+          "drive": [2.5, 0]
+        },
+        {
+          "targets": [
+            {"joint": "crusher_shoulder", "angle": 1.4},
+            {"joint": "crusher_wrist", "angle": 1.1},
+            {"joint": "small_shoulder", "angle": -1.4},
+            {"joint": "small_wrist", "angle": -1.1}
+          ],
+          "speed": 18,
+          "ticks": 14
+        }
+      ],
+      "returnSpeed": 7,
+      "requires": ["crusher_arm", "crusher", "small_arm", "small_claw"]
+    }
+  ],
+  "locomotion": {
+    "walkSpeed": 2.7,
+    "walkForce": 300,
+    "turnSpeed": 3.8,
+    "turnTorque": 70,
+    "dashImpulse": 95
+  }
+}

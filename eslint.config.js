@@ -79,6 +79,7 @@ export default tseslint.config(
         { type: 'ui', pattern: 'src/ui' },
         { type: 'audio', pattern: 'src/audio' },
         { type: 'platform', pattern: 'src/platform' },
+        { type: 'editor', pattern: 'src/editor' },
         { type: 'app', pattern: 'src/app' },
         { type: 'tests', pattern: 'tests' },
         { type: 'tools', pattern: 'tools' },
@@ -110,9 +111,11 @@ export default tseslint.config(
             // ui may name bot difficulty TYPES (menus), never run bot logic.
             { from: el('ui'), allow: { to: el('bots'), dependency: { kind: 'type' } } },
             { from: el('platform'), allow: { to: elTypes(['platform']) } },
+            // the dev-only fighter editor: edits content data, previews it with core + render.
+            { from: el('editor'), allow: { to: elTypes(['editor', 'core', 'schema', 'registry', 'render', 'ui', 'input']) } },
             // the app entry wires everything together.
-            { from: el('app'), allow: { to: elTypes(['app', 'core', 'schema', 'content', 'registry', 'bots', 'input', 'net', 'render', 'ui', 'audio', 'platform']) } },
-            { from: elTypes(['tests', 'tools']), allow: { to: elTypes(['tests', 'tools', 'app', 'core', 'schema', 'content', 'registry', 'bots', 'input', 'net', 'render', 'ui', 'audio', 'platform']) } },
+            { from: el('app'), allow: { to: elTypes(['app', 'editor', 'core', 'schema', 'content', 'registry', 'bots', 'input', 'net', 'render', 'ui', 'audio', 'platform']) } },
+            { from: elTypes(['tests', 'tools']), allow: { to: elTypes(['tests', 'tools', 'app', 'editor', 'core', 'schema', 'content', 'registry', 'bots', 'input', 'net', 'render', 'ui', 'audio', 'platform']) } },
           ],
         },
       ],

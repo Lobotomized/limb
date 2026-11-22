@@ -112,6 +112,60 @@ export function buildStylesheet(): string {
 .sandbox-panel label { display: grid; grid-template-columns: 1fr ${u(LAYOUT.sandboxInputWidth)}; gap: ${u(SPACE[2])}; ${type(TYPE.caption)} align-items: center; }
 .sandbox-panel input { background: ${COLOR.bg900}; color: ${COLOR.ink}; border: ${u(STROKE.hairline)} solid ${COLOR.line}; border-radius: ${u(RADIUS.sm)}; padding: ${u(SPACE[1])}; ${type(TYPE.caption)} }
 .sandbox-log { ${type(TYPE.caption)} color: ${COLOR.inkMuted}; white-space: pre; }
+
+/* ---------------------------------------------------------------- fighter editor (dev) */
+.editor { position: absolute; inset: 0; pointer-events: none; user-select: text; }
+.editor > * { pointer-events: auto; }
+.ed-top { position: absolute; top: 0; left: 0; right: 0; height: ${u(LAYOUT.editorTopHeight)}; display: flex; align-items: center; gap: ${u(SPACE[2])};
+  padding: 0 ${u(SPACE[4])}; background: ${COLOR.bg800}; box-shadow: ${SHADOW.panel}; }
+.ed-panel { position: absolute; top: calc(${u(LAYOUT.editorTopHeight)} + ${u(SPACE[2])}); bottom: ${u(SPACE[2])}; overflow: auto; background: ${COLOR.bg800};
+  border-radius: ${u(RADIUS.md)}; box-shadow: ${SHADOW.panel}; padding: ${u(SPACE[3])}; ${type(TYPE.caption)} }
+.ed-left { left: ${u(SPACE[2])}; width: ${u(LAYOUT.editorOutlineWidth)}; }
+.ed-right { right: ${u(SPACE[2])}; width: ${u(LAYOUT.editorInspectorWidth)}; }
+.ed-heading { ${type(TYPE.hudLabel)} color: ${COLOR.inkMuted}; margin: ${u(SPACE[3])} 0 ${u(SPACE[1])}; }
+.ed-item { padding: ${u(SPACE[1])} ${u(SPACE[2])}; border-radius: ${u(RADIUS.sm)}; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-item:hover { background: ${COLOR.bg700}; }
+.ed-item.active { background: ${COLOR.bg600}; box-shadow: inset ${u(STROKE.focus)} 0 0 ${COLOR.focus}; }
+.ed-item-title { ${type(TYPE.hudValue)} }
+.ed-problem { padding: ${u(SPACE[1])} ${u(SPACE[2])}; color: ${COLOR.inkMuted}; cursor: pointer; border-radius: ${u(RADIUS.sm)}; }
+.ed-problem.bad { color: ${COLOR.danger}; }
+.ed-problem:hover { background: ${COLOR.bg700}; }
+.ed-status { flex: 1; text-align: right; color: ${COLOR.inkMuted}; ${type(TYPE.caption)} }
+.ed-status.bad { color: ${COLOR.danger}; }
+.ed-stack { display: flex; flex-direction: column; gap: ${u(SPACE[2])}; }
+.ed-section { display: flex; flex-direction: column; gap: ${u(SPACE[2])}; padding-bottom: ${u(SPACE[3])}; margin-bottom: ${u(SPACE[3])}; border-bottom: ${u(STROKE.hairline)} solid ${COLOR.line}; }
+.ed-section-title { ${type(TYPE.hudLabel)} }
+.ed-row { display: grid; grid-template-columns: ${u(LAYOUT.editorLabelWidth)} 1fr; gap: ${u(SPACE[2])}; align-items: center; }
+.ed-label { color: ${COLOR.inkMuted}; }
+.ed-controls { display: flex; gap: ${u(SPACE[2])}; align-items: center; min-width: 0; }
+.ed-field { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; }
+.ed-num, .ed-text, .ed-select { background: ${COLOR.bg900}; color: ${COLOR.ink}; border: ${u(STROKE.hairline)} solid ${COLOR.line}; border-radius: ${u(RADIUS.sm)};
+  padding: ${u(SPACE[1])} ${u(SPACE[2])}; ${type(TYPE.caption)} min-width: 0; }
+.ed-num { width: ${u(LAYOUT.sandboxInputWidth)}; flex: none; }
+.ed-text { flex: 1; width: 100%; resize: vertical; }
+.ed-text.invalid { border-color: ${COLOR.danger}; }
+.ed-text:disabled { opacity: ${OPACITY.disabled}; }
+.ed-slider { flex: 1; min-width: 0; accent-color: ${COLOR.focus}; }
+.ed-check { accent-color: ${COLOR.focus}; }
+.ed-error { color: ${COLOR.danger}; ${type(TYPE.caption)} }
+.ed-error:empty { display: none; }
+.ed-checklist { display: grid; grid-template-columns: 1fr 1fr; gap: ${u(SPACE[1])} ${u(SPACE[2])}; }
+.ed-check-item { display: flex; gap: ${u(SPACE[1])}; align-items: center; }
+.ed-buttons { display: flex; flex-wrap: wrap; gap: ${u(SPACE[2])}; }
+.ed-btn { background: ${COLOR.bg700}; color: ${COLOR.ink}; border: ${u(STROKE.hairline)} solid ${COLOR.line}; border-radius: ${u(RADIUS.sm)};
+  padding: ${u(SPACE[1])} ${u(SPACE[3])}; ${type(TYPE.caption)} cursor: pointer; }
+.ed-btn:hover:not(:disabled) { background: ${COLOR.bg600}; }
+.ed-btn:disabled { opacity: ${OPACITY.disabled}; cursor: default; }
+.ed-btn.primary { border-color: ${COLOR.focus}; }
+.ed-btn.danger { color: ${COLOR.danger}; }
+.ed-btn.small { padding: 0 ${u(SPACE[2])}; }
+.ed-point { display: grid; grid-template-columns: 1fr 1fr auto; gap: ${u(SPACE[2])}; align-items: center; }
+.ed-point .ed-row { grid-template-columns: auto 1fr; }
+.ed-target { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; padding: ${u(SPACE[2])}; border: ${u(STROKE.hairline)} solid ${COLOR.line}; border-radius: ${u(RADIUS.sm)}; }
+.ed-phases { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; }
+.ed-phase-head { padding: ${u(SPACE[1])} ${u(SPACE[2])}; background: ${COLOR.bg700}; border-radius: ${u(RADIUS.sm)}; cursor: pointer; }
+.ed-phase-head.active { background: ${COLOR.bg600}; box-shadow: inset ${u(STROKE.focus)} 0 0 ${COLOR.focus}; }
+.ed-phase { display: flex; flex-direction: column; gap: ${u(SPACE[2])}; padding: ${u(SPACE[2])} 0 ${u(SPACE[2])} ${u(SPACE[3])}; }
 `;
 }
 

@@ -42,7 +42,8 @@
     "sim:bots": "vite-node tools/sim-bots.ts --",
     "sim:determinism": "vite-node tools/sim-determinism.ts --",
     "sim:net": "vite-node tools/sim-net.ts --",
-    "sim:parts": "vite-node tools/sim-parts.ts --"
+    "sim:parts": "vite-node tools/sim-parts.ts --",
+    "fighters:json": "vite-node tools/fighters-json.ts --"
   },
   "author": "Limb Clash",
   "desktopName": "limb-clash.desktop"

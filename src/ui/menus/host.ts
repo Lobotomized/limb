@@ -27,6 +27,7 @@ export interface UiHost {
   startLocal(p1: string, p2: string): void;
   startVsBot(p1: string, bot: string, difficulty: DifficultyId): void;
   openSandbox(): void;
+  openEditor(): void;
   quitApp(): void;
   // ---- online
   online: {

@@ -1,10 +1,12 @@
-// One validation test per fighter folder, generated automatically.
+// One validation test per fighter folder, generated automatically (fighter.json or fighter.ts).
 import { describe, expect, it } from 'vitest';
 import { validateFighter } from '../src/core/schema/validate';
-import type { FighterModule } from '../src/core/schema/fighter-schema';
-import { allFighters } from '../src/registry/fighters';
+import type { FighterDef, FighterModule } from '../src/core/schema/fighter-schema';
+import { allFighters, mergeSources } from '../src/registry/fighters';
 
-const modules = import.meta.glob<FighterModule>('/src/content/fighters/*/fighter.ts', { eager: true });
+const ts = import.meta.glob<FighterModule>('/src/content/fighters/*/fighter.ts', { eager: true });
+const json = import.meta.glob<FighterDef>('/src/content/fighters/*/fighter.json', { eager: true, import: 'default' });
+const modules = mergeSources(ts, json, (fighter: FighterDef) => ({ fighter }), 'fighter');
 
 describe('every fighter validates', () => {
   for (const path of Object.keys(modules).sort()) {
@@ -18,5 +20,9 @@ describe('every fighter validates', () => {
     const ids = allFighters().map((f) => f.def.id);
     expect(ids).toEqual([...ids].sort());
     expect(ids.length).toBe(Object.keys(modules).length);
+  });
+  it('a folder with both fighter.ts and fighter.json is rejected', () => {
+    const def = Object.values(modules)[0]!.fighter;
+    expect(() => mergeSources({ '/src/content/fighters/x/fighter.ts': { fighter: def } }, { '/src/content/fighters/x/fighter.json': def }, (fighter: FighterDef) => ({ fighter }), 'fighter')).toThrow(/keep only one/);
   });
 });

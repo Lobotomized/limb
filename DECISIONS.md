@@ -88,6 +88,15 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - `sim:determinism` (20 matches × 3,000 ticks, twice + save/restore): identical. `sim:net` (0–200 ms RTT, up to 15 % loss, 40 ms jitter): all runs equal the offline simulation, max rollback ≤ 8.
 - Browser play-test (headless Chromium, scripted keyboard, mouse and mocked gamepad): every screen, local versus, vs bot to results, rematch, pause/quit, settings persistence, sandbox, online between two tabs through the signaling server (hashes match). No console errors.
 - Performance: per-frame CPU for simulation + draw-command building ≈ 2.5 ms median / 5 ms p95 in headless Chromium on this container (budget 16.7 ms). GPU time could not be measured (software rendering only).
+- Fighter content is JSON (`fighter.json`, `bot.json`, `visuals.json`) so the visual editor can read and write it safely; hand-written `.ts` still loads (not both in one folder) and `npm run fighters:json` converts. The conversion is bit-identical (same simulation hashes).
+- JSON content is written with a custom formatter (inline when ≤ 100 chars, numbers rounded to 4 decimals, -0 → 0) — readable diffs and no editor float noise.
+- The fighter editor is an in-game dev mode (`src/editor/`, like the sandbox) rather than a separate app — it reuses the real simulation, renderer and validator, so the preview is exactly the game.
+- Editor saves go through a dev-server-only Vite plugin (`apply: 'serve'`) that writes only the three JSON files into a valid fighter folder and refuses to sit next to a `.ts` — no file access in production builds or Electron.
+- After a save Vite reloads the page; the editor keeps its document, selection and dummy in sessionStorage and reopens (also survives code hot-reloads with unsaved edits).
+- Editor preview runs in a small walled pen (no ring-out) next to a passive dummy fighter of your choice; P1 controls drive the edited fighter.
+- Undo/redo are whole-document snapshots (fighters are a few KB); typing/dragging updates the preview live and one undo step is recorded when the edit finishes.
+- Mirror copies a limb subtree across the fighter's forward axis (anchors, idle angles and limits flipped, polygons reversed to stay CCW, Left/Right and _l/_r swapped); moves are not mirrored.
+- The ids of existing fighters are read-only in the editor (renaming would create a second folder); new fighters choose their id when created.
 
 ## Balance pass 2 — six-move controls (hard bots, 50 matches per pairing, seeds 1..50)
 

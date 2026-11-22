@@ -254,6 +254,11 @@ export const LAYOUT = {
   toastMinHeight: 16,
   sandboxWidth: 360,
   sandboxInputWidth: 90,
+  /** Fighter editor: outline (left) and inspector (right) panel widths, top bar height. */
+  editorOutlineWidth: 300,
+  editorInspectorWidth: 420,
+  editorTopHeight: 52,
+  editorLabelWidth: 150,
   previewDiagramScale: 1.5,
   resultsRows: 6,
   toughnessLabelWidth: 190,

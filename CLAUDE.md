@@ -39,7 +39,8 @@ nextState = step(state, inputs)      // src/core/simulation.ts, fixed 60 ticks/s
   (ALL global constants), `input-frame.ts`, `loop.ts` (fixed-tick accumulator),
   `abilities/` (plugin interface + auto-discovery; **no abilities ship**), `schema/` (fighter &
   arena types + validator).
-- `src/content/` — pure data. `fighters/<id>/fighter.ts` (+ optional `visuals.ts`, `bot.ts`),
+- `src/content/` — pure data. `fighters/<id>/fighter.json` (+ optional `visuals.json`, `bot.json`;
+  written by the fighter editor; a hand-written `.ts` instead of a `.json` also works, not both),
   `arenas/<id>/arena.ts`. Discovered automatically, sorted by id. No central list.
 - `src/registry/` — discovery (`import.meta.glob`) + validation of content.
 - `src/bots/` — deterministic utility-AI bot (`bot.ts`), `difficulty.ts`, `runner.ts` (headless
@@ -56,6 +57,9 @@ nextState = step(state, inputs)      // src/core/simulation.ts, fixed 60 ticks/s
 - `src/platform/` — web / electron implementations behind one interface.
 - `src/app/` — wiring: `game.ts` (shell, UiHost), `match.ts`, `drivers.ts`, `online.ts`,
   `online-driver.ts`, `sandbox.ts`.
+- `src/editor/` — dev-only visual fighter editor (`editor.ts` UI + live preview, `model.ts` pure edits
+  + undo, `fields.ts`, `geometry.ts`, `json-format.ts`). Saves via the dev-server plugin
+  `tools/vite-editor-plugin.ts` (POST /__editor/save, JSON files in a fighter folder only).
 - `server/` signaling server · `electron/` main, preload, Steam service, builder config ·
   `tools/` CLIs · `tests/` Vitest · `.claude/skills/` project skills.
 
@@ -77,13 +81,15 @@ nextState = step(state, inputs)      // src/core/simulation.ts, fixed 60 ticks/s
 - `app/` wires everything; `registry/` may import content + core.
 
 ## Commands
-- `npm run dev` — game in the browser (http://localhost:5173). Dev extras: Sandbox in the main menu,
+- `npm run dev` — game in the browser (http://localhost:5173). Dev extras: Sandbox and Fighter editor
+  in the main menu (`?editor=<id>` opens the editor),
   `?demo=humanoid,crab` (bot vs bot), `?signal=ws://host:8787`, `window.__limbClash`.
 - `npm run build` · `npm run server` (signaling, port 8787) · `npm run electron:dev` · `npm run dist`
 - `npm run check` — typecheck + lint + all tests. **Must pass before every commit.**
 - `npm run sim:bots -- --all --difficulty hard --matches 50` — balancing (win rates, round length,
   damage per part type, move usage). `npm run sim:parts -- humanoid crab` — per-part damage.
 - `npm run sim:determinism` — random-input matches run twice, hashes compared every tick.
+- `npm run fighters:json -- <id>|--all` — converts `.ts` fighter content to the editor's JSON files.
 - `npm run sim:net` — rollback sessions over the net simulator vs offline runs.
 
 ## Definition of done

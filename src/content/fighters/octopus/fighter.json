@@ -1,0 +1,729 @@
+{
+  "id": "octopus",
+  "name": "Octopus",
+  "description": "Eight light tentacles all around. Fast and slippery, but the big mantle is the core.",
+  "parts": [
+    {
+      "id": "mantle",
+      "name": "Mantle",
+      "shape": {"kind": "circle", "radius": 0.34},
+      "mass": 5,
+      "maxHealth": 310
+    },
+    {
+      "id": "t0_base",
+      "name": "Front left base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t0_mid",
+      "name": "Front left mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t0_tip",
+      "name": "Front left tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t1_base",
+      "name": "Side left base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t1_mid",
+      "name": "Side left mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t1_tip",
+      "name": "Side left tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t2_base",
+      "name": "Flank left base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t2_mid",
+      "name": "Flank left mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t2_tip",
+      "name": "Flank left tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t3_base",
+      "name": "Rear left base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t3_mid",
+      "name": "Rear left mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t3_tip",
+      "name": "Rear left tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t4_base",
+      "name": "Rear right base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t4_mid",
+      "name": "Rear right mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t4_tip",
+      "name": "Rear right tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t5_base",
+      "name": "Flank right base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t5_mid",
+      "name": "Flank right mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t5_tip",
+      "name": "Flank right tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t6_base",
+      "name": "Side right base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t6_mid",
+      "name": "Side right mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t6_tip",
+      "name": "Side right tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t7_base",
+      "name": "Front right base",
+      "shape": {"kind": "capsule", "length": 0.32, "radius": 0.07},
+      "mass": 0.48,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t7_mid",
+      "name": "Front right mid",
+      "shape": {"kind": "capsule", "length": 0.28, "radius": 0.06},
+      "mass": 0.38,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    },
+    {
+      "id": "t7_tip",
+      "name": "Front right tip",
+      "shape": {"kind": "capsule", "length": 0.25, "radius": 0.05},
+      "mass": 0.27,
+      "maxHealth": 21,
+      "tags": ["locomotion"]
+    }
+  ],
+  "joints": [
+    {
+      "id": "j0_0",
+      "parent": "mantle",
+      "child": "t0_base",
+      "anchorParent": [0.2772, 0.1148],
+      "anchorChild": [-0.13, 0],
+      "limits": [-0.9073, 1.6927],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": 0.3927
+    },
+    {
+      "id": "j0_1",
+      "parent": "t0_base",
+      "child": "t0_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j0_2",
+      "parent": "t0_mid",
+      "child": "t0_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j1_0",
+      "parent": "mantle",
+      "child": "t1_base",
+      "anchorParent": [0.1148, 0.2772],
+      "anchorChild": [-0.13, 0],
+      "limits": [-0.1219, 2.4781],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": 1.1781
+    },
+    {
+      "id": "j1_1",
+      "parent": "t1_base",
+      "child": "t1_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j1_2",
+      "parent": "t1_mid",
+      "child": "t1_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j2_0",
+      "parent": "mantle",
+      "child": "t2_base",
+      "anchorParent": [-0.1148, 0.2772],
+      "anchorChild": [-0.13, 0],
+      "limits": [0.6635, 3.09],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": 1.9635
+    },
+    {
+      "id": "j2_1",
+      "parent": "t2_base",
+      "child": "t2_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j2_2",
+      "parent": "t2_mid",
+      "child": "t2_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j3_0",
+      "parent": "mantle",
+      "child": "t3_base",
+      "anchorParent": [-0.2772, 0.1148],
+      "anchorChild": [-0.13, 0],
+      "limits": [1.4489, 3.09],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": 2.7489
+    },
+    {
+      "id": "j3_1",
+      "parent": "t3_base",
+      "child": "t3_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j3_2",
+      "parent": "t3_mid",
+      "child": "t3_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": 0.12
+    },
+    {
+      "id": "j4_0",
+      "parent": "mantle",
+      "child": "t4_base",
+      "anchorParent": [-0.2772, -0.1148],
+      "anchorChild": [-0.13, 0],
+      "limits": [-3.09, -1.4489],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": -2.7489
+    },
+    {
+      "id": "j4_1",
+      "parent": "t4_base",
+      "child": "t4_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j4_2",
+      "parent": "t4_mid",
+      "child": "t4_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j5_0",
+      "parent": "mantle",
+      "child": "t5_base",
+      "anchorParent": [-0.1148, -0.2772],
+      "anchorChild": [-0.13, 0],
+      "limits": [-3.09, -0.6635],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": -1.9635
+    },
+    {
+      "id": "j5_1",
+      "parent": "t5_base",
+      "child": "t5_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j5_2",
+      "parent": "t5_mid",
+      "child": "t5_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j6_0",
+      "parent": "mantle",
+      "child": "t6_base",
+      "anchorParent": [0.1148, -0.2772],
+      "anchorChild": [-0.13, 0],
+      "limits": [-2.4781, 0.1219],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": -1.1781
+    },
+    {
+      "id": "j6_1",
+      "parent": "t6_base",
+      "child": "t6_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j6_2",
+      "parent": "t6_mid",
+      "child": "t6_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j7_0",
+      "parent": "mantle",
+      "child": "t7_base",
+      "anchorParent": [0.2772, -0.1148],
+      "anchorChild": [-0.13, 0],
+      "limits": [-1.6927, 0.9073],
+      "strength": 60,
+      "damping": 2,
+      "idleAngle": -0.3927
+    },
+    {
+      "id": "j7_1",
+      "parent": "t7_base",
+      "child": "t7_mid",
+      "anchorParent": [0.13, 0],
+      "anchorChild": [-0.11, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 35,
+      "damping": 1.2,
+      "idleAngle": -0.12
+    },
+    {
+      "id": "j7_2",
+      "parent": "t7_mid",
+      "child": "t7_tip",
+      "anchorParent": [0.11, 0],
+      "anchorChild": [-0.095, 0],
+      "limits": [-1.6, 1.6],
+      "strength": 19,
+      "damping": 0.8,
+      "idleAngle": -0.12
+    }
+  ],
+  "rootPart": "mantle",
+  "corePart": "mantle",
+  "moves": [
+    {
+      "button": "A",
+      "direction": "neutral",
+      "name": "Lash flurry",
+      "description": "The two front tentacles whip forward in turn.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.06},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0}
+          ],
+          "speed": 22,
+          "ticks": 7
+        },
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.3927},
+            {"joint": "j0_1", "angle": 0.12},
+            {"joint": "j0_2", "angle": 0.12},
+            {"joint": "j7_0", "angle": -0.06},
+            {"joint": "j7_1", "angle": 0},
+            {"joint": "j7_2", "angle": 0}
+          ],
+          "speed": 22,
+          "ticks": 7
+        },
+        {
+          "targets": [
+            {"joint": "j7_0", "angle": -0.3927},
+            {"joint": "j7_1", "angle": -0.12},
+            {"joint": "j7_2", "angle": -0.12},
+            {"joint": "j0_0", "angle": 0.06},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0}
+          ],
+          "speed": 22,
+          "ticks": 7
+        },
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.3927},
+            {"joint": "j0_1", "angle": 0.12},
+            {"joint": "j0_2", "angle": 0.12}
+          ],
+          "speed": 18,
+          "ticks": 4
+        }
+      ],
+      "returnSpeed": 12,
+      "requires": ["t0_base", "t7_base"]
+    },
+    {
+      "button": "B",
+      "direction": "neutral",
+      "name": "Coil crack",
+      "description": "Hold to coil the front tentacles back; release to crack them forward.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 1.2927},
+            {"joint": "j0_1", "angle": 1.3},
+            {"joint": "j0_2", "angle": 1.3},
+            {"joint": "j7_0", "angle": -1.2927},
+            {"joint": "j7_1", "angle": -1.3},
+            {"joint": "j7_2", "angle": -1.3}
+          ],
+          "speed": 12,
+          "ticks": 14,
+          "hold": true,
+          "maxHoldTicks": 90
+        },
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.06},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0},
+            {"joint": "j7_0", "angle": -0.06},
+            {"joint": "j7_1", "angle": 0},
+            {"joint": "j7_2", "angle": 0}
+          ],
+          "speed": 30,
+          "ticks": 12
+        }
+      ],
+      "returnSpeed": 10,
+      "requires": ["t0_base", "t7_base"]
+    },
+    {
+      "button": "A",
+      "direction": "back",
+      "name": "Jet retreat",
+      "description": "Jet backwards with the front tentacles curled over the mantle.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.15},
+            {"joint": "j0_1", "angle": -1.45},
+            {"joint": "j0_2", "angle": -1.45},
+            {"joint": "j7_0", "angle": -0.15},
+            {"joint": "j7_1", "angle": 1.45},
+            {"joint": "j7_2", "angle": 1.45}
+          ],
+          "speed": 14,
+          "ticks": 16,
+          "drive": [-7, 0]
+        }
+      ],
+      "returnSpeed": 9,
+      "requires": ["mantle"]
+    },
+    {
+      "button": "B",
+      "direction": "back",
+      "name": "Maelstrom",
+      "description": "Spread all eight tentacles and spin. Hold to keep spinning.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.3927},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0},
+            {"joint": "j1_0", "angle": 1.1781},
+            {"joint": "j1_1", "angle": 0},
+            {"joint": "j1_2", "angle": 0},
+            {"joint": "j2_0", "angle": 1.9635},
+            {"joint": "j2_1", "angle": 0},
+            {"joint": "j2_2", "angle": 0},
+            {"joint": "j3_0", "angle": 2.7489},
+            {"joint": "j3_1", "angle": 0},
+            {"joint": "j3_2", "angle": 0},
+            {"joint": "j4_0", "angle": -2.7489},
+            {"joint": "j4_1", "angle": 0},
+            {"joint": "j4_2", "angle": 0},
+            {"joint": "j5_0", "angle": -1.9635},
+            {"joint": "j5_1", "angle": 0},
+            {"joint": "j5_2", "angle": 0},
+            {"joint": "j6_0", "angle": -1.1781},
+            {"joint": "j6_1", "angle": 0},
+            {"joint": "j6_2", "angle": 0},
+            {"joint": "j7_0", "angle": -0.3927},
+            {"joint": "j7_1", "angle": 0},
+            {"joint": "j7_2", "angle": 0}
+          ],
+          "speed": 14,
+          "ticks": 6
+        },
+        {"targets": [], "speed": 14, "ticks": 30, "spin": 11, "hold": true, "maxHoldTicks": 90}
+      ],
+      "returnSpeed": 9,
+      "requires": ["mantle"]
+    },
+    {
+      "button": "A",
+      "direction": "forward",
+      "name": "Spear dive",
+      "description": "Sweep the side tentacles back and dive in, front tentacles first.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.06},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0},
+            {"joint": "j7_0", "angle": -0.06},
+            {"joint": "j7_1", "angle": 0},
+            {"joint": "j7_2", "angle": 0},
+            {"joint": "j1_0", "angle": 1.8781},
+            {"joint": "j1_1", "angle": 0},
+            {"joint": "j1_2", "angle": 0},
+            {"joint": "j2_0", "angle": 2.6635},
+            {"joint": "j2_1", "angle": 0},
+            {"joint": "j2_2", "angle": 0},
+            {"joint": "j5_0", "angle": -2.6635},
+            {"joint": "j5_1", "angle": 0},
+            {"joint": "j5_2", "angle": 0},
+            {"joint": "j6_0", "angle": -1.8781},
+            {"joint": "j6_1", "angle": 0},
+            {"joint": "j6_2", "angle": 0}
+          ],
+          "speed": 16,
+          "ticks": 6
+        },
+        {"targets": [], "speed": 16, "ticks": 10, "drive": [6, 0]}
+      ],
+      "returnSpeed": 10,
+      "requires": ["t0_base", "t7_base"]
+    },
+    {
+      "button": "B",
+      "direction": "forward",
+      "name": "Embrace",
+      "description": "Reach around with six tentacles while stepping in, then squeeze them shut.",
+      "phases": [
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.5},
+            {"joint": "j0_1", "angle": 0},
+            {"joint": "j0_2", "angle": 0},
+            {"joint": "j7_0", "angle": -0.5},
+            {"joint": "j7_1", "angle": 0},
+            {"joint": "j7_2", "angle": 0},
+            {"joint": "j1_0", "angle": 0.9},
+            {"joint": "j1_1", "angle": 0},
+            {"joint": "j1_2", "angle": 0},
+            {"joint": "j6_0", "angle": -0.9},
+            {"joint": "j6_1", "angle": 0},
+            {"joint": "j6_2", "angle": 0},
+            {"joint": "j2_0", "angle": 1.2},
+            {"joint": "j2_1", "angle": 0},
+            {"joint": "j2_2", "angle": 0},
+            {"joint": "j5_0", "angle": -1.2},
+            {"joint": "j5_1", "angle": 0},
+            {"joint": "j5_2", "angle": 0}
+          ],
+          "speed": 14,
+          "ticks": 12,
+          "drive": [3, 0]
+        },
+        {
+          "targets": [
+            {"joint": "j0_0", "angle": 0.1},
+            {"joint": "j0_1", "angle": -1.4},
+            {"joint": "j0_2", "angle": -1.4},
+            {"joint": "j7_0", "angle": -0.1},
+            {"joint": "j7_1", "angle": 1.4},
+            {"joint": "j7_2", "angle": 1.4},
+            {"joint": "j1_0", "angle": 0.4},
+            {"joint": "j1_1", "angle": -1.4},
+            {"joint": "j1_2", "angle": -1.4},
+            {"joint": "j6_0", "angle": -0.4},
+            {"joint": "j6_1", "angle": 1.4},
+            {"joint": "j6_2", "angle": 1.4},
+            {"joint": "j2_0", "angle": 0.8},
+            {"joint": "j2_1", "angle": -1.4},
+            {"joint": "j2_2", "angle": -1.4},
+            {"joint": "j5_0", "angle": -0.8},
+            {"joint": "j5_1", "angle": 1.4},
+            {"joint": "j5_2", "angle": 1.4}
+          ],
+          "speed": 18,
+          "ticks": 14
+        }
+      ],
+      "returnSpeed": 9,
+      "requires": ["t0_base", "t7_base", "t1_base", "t6_base"]
+    }
+  ],
+  "locomotion": {
+    "walkSpeed": 5.6,
+    "walkForce": 260,
+    "turnSpeed": 9,
+    "turnTorque": 36,
+    "dashImpulse": 85
+  }
+}
