@@ -21,7 +21,16 @@ export function onlineLobby(host: UiHost) {
     input.value = v;
     for (let i = 0; i < CODE_LEN; i++) code[i] = v[i] ?? 'A';
   });
-  input.addEventListener('keydown', (e) => e.stopPropagation());
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      input.blur();
+      host.online.joinRoom(code.join(''));
+    } else if (e.key === 'Escape' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      input.blur(); // hand navigation back to the menu
+    } else e.stopPropagation(); // typing letters must not drive the menu
+  });
   let picking = false;
   const s = host.screen(
     [

@@ -50,3 +50,10 @@ describe('rng', () => {
     expect(mixSeed(1, 2)).not.toBe(mixSeed(2, 1));
   });
 });
+
+describe('hasher', () => {
+  it('always produces 16 lowercase hex characters', async () => {
+    const { Hasher } = await import('../src/core/hash');
+    for (let i = 0; i < 2000; i++) expect(new Hasher().num(i * 1.37).str(`x${i}`).hex()).toMatch(/^[0-9a-f]{16}$/);
+  });
+});

@@ -52,3 +52,10 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - Online pause does not freeze the simulation (overlay only) — the opponent keeps playing; local pause freezes.
 - Dev-only `?demo=a,b` URL runs a hard bot-vs-bot match (used for screenshots and attract mode); `window.__limbClash` exposes the game for scripted play-tests.
 - The sandbox is reachable from the main menu in dev builds only (`import.meta.env.DEV`).
+- Online: the room creator is P1 (host) and decides the seed and input delay; control messages (ready/start/bye) are JSON sent reliably over the same unreliable channel (resent until acked) — one channel for WebRTC and Steam alike.
+- Auto input delay from RTT: <40 ms → 1, <100 → 2, <170 → 3, else 4 frames.
+- Time-sync: hard stall when prediction would exceed 8 ticks; soft stall (one tick in four) when more than 2 ticks ahead of the opponent's reported tick adjusted by RTT/2.
+- Rollback de-duplicates presentation events by tick + type + parts involved (not damage values), so a resimulated hit with slightly different damage doesn't spark twice.
+- Desync reports go through the platform layer: browser → console + downloaded text file; Electron → a file in the user data folder.
+- The WebRTC transport uses public Google STUN for NAT traversal (configurable in `src/net/config.ts`); a TURN server is not included (see MANUAL_STEPS.md).
+- The signaling URL defaults to `ws(s)://<page host>:8787`; override with `?signal=wss://…` or the `signalingUrl` setting.

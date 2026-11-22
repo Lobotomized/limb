@@ -12,7 +12,7 @@ export class Hasher {
   u32v(v: number): this {
     this.a = Math.imul(this.a ^ (v >>> 0), 0x01000193) >>> 0;
     this.b = Math.imul(this.b ^ ((v >>> 0) + 0x7f4a7c15), 0x5bd1e995) >>> 0;
-    this.b ^= this.b >>> 15;
+    this.b = (this.b ^ (this.b >>> 15)) >>> 0;
     return this;
   }
 
@@ -54,6 +54,6 @@ export class Hasher {
   }
 
   hex(): string {
-    return this.a.toString(16).padStart(8, '0') + this.b.toString(16).padStart(8, '0');
+    return (this.a >>> 0).toString(16).padStart(8, '0') + (this.b >>> 0).toString(16).padStart(8, '0');
   }
 }

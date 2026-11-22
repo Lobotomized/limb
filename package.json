@@ -29,7 +29,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "server": "vite-node server/signaling.ts",
+    "server": "vite-node server/main.ts",
     "electron:dev": "vite build && electron .",
     "dist": "vite build && electron-builder --config electron/builder.config.cjs",
     "typecheck": "tsc --noEmit",

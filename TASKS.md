@@ -54,10 +54,10 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 33. Audio
 
 ## Phase 10: Online
-- [ ] 34. Transport interface, local/fake transports, net simulator
-- [ ] 35. Rollback session
-- [ ] 36. WebRTC transport + signaling server + lobby
-- [ ] 37. sim:net tool
+- [x] 34. Transport interface, local/fake transports, net simulator
+- [x] 35. Rollback session
+- [x] 36. WebRTC transport + signaling server + lobby
+- [x] 37. sim:net tool
 
 ## Phase 11: Desktop and Steam
 - [ ] 38. Electron app, platform layer, packaging
