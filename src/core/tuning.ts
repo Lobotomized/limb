@@ -68,8 +68,6 @@ export const TUNING = {
   dashCooldownTicks: 45,
   /** Stick deadzone for movement and move-direction selection (0..1). */
   stickDeadzone: 0.3,
-  /** Ticks of "aim stick released" before facing returns to auto-tracking. */
-  aimReleaseTicks: 0,
 } as const;
 
 export type Tuning = { -readonly [K in keyof typeof TUNING]: number };

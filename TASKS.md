@@ -70,8 +70,8 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 43. README.md
 
 ## Phase 13: Final verification
-- [ ] 44. npm run check
-- [ ] 45. sim:bots all pairings/difficulties
-- [ ] 46. sim:determinism + sim:net
-- [ ] 47. Browser play-test (headless)
-- [ ] 48. Fix and re-run
+- [x] 44. npm run check
+- [x] 45. sim:bots all pairings/difficulties
+- [x] 46. sim:determinism + sim:net
+- [x] 47. Browser play-test (headless)
+- [x] 48. Fix and re-run

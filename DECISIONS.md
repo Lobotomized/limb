@@ -66,3 +66,10 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - `npm run dist` builds for the current OS only (AppImage + unpacked dir on Linux, NSIS on Windows, DMG on macOS); electron-builder publishing is disabled because builds go to Steam.
 - The Electron window background color is a literal `#111318` (bg-900) in `electron/main.cjs` — the main process can't import the TypeScript theme; it only shows before the page paints.
 - add-fighter walkthrough (Phase 12): a throwaway fighter `zz-walkthrough` was added in its own folder; validation, movement, pairing and bot tests picked it up automatically, `sim:bots` ran it against every fighter, and `git status` showed zero changes outside the folder. It was then deleted.
+
+## Final verification (Phase 13)
+- `npm run check`: typecheck + lint + 118 tests (19 files) pass.
+- `sim:bots`, 20 matches per pairing at easy, medium and hard (360 matches, 12-min cap): 0 crashes, 0 stuck, 0 timeouts.
+- `sim:determinism` (20 matches × 3,000 ticks, twice + save/restore): identical. `sim:net` (0–200 ms RTT, up to 15 % loss, 40 ms jitter): all runs equal the offline simulation, max rollback ≤ 8.
+- Browser play-test (headless Chromium, scripted keyboard, mouse and mocked gamepad): every screen, local versus, vs bot to results, rematch, pause/quit, settings persistence, sandbox, online between two tabs through the signaling server (hashes match). No console errors.
+- Performance: per-frame CPU for simulation + draw-command building ≈ 2.5 ms median / 5 ms p95 in headless Chromium on this container (budget 16.7 ms). GPU time could not be measured (software rendering only).
