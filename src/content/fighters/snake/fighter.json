@@ -34,7 +34,7 @@
         ]
       },
       "mass": 1.8,
-      "maxHealth": 110,
+      "maxHealth": 220,
       "tags": ["armor"]
     },
     {
@@ -157,7 +157,7 @@
     }
   ],
   "rootPart": "heart",
-  "corePart": "heart",
+  "corePart": "head",
   "moves": [
     {
       "button": 1,
