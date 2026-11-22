@@ -31,8 +31,8 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 18. Spare input action slots
 
 ## Phase 6: Input and local play
-- [ ] 19. InputFrame, keyboard, gamepad, bindings
-- [ ] 20. Minimal renderer, local 2P match in browser
+- [x] 19. InputFrame, keyboard, gamepad, bindings
+- [x] 20. Minimal renderer, local 2P match in browser
 
 ## Phase 7: All fighters
 - [ ] 21. Octopus

@@ -53,5 +53,17 @@ export function inputsEqual(a: InputFrame, b: InputFrame): boolean {
 /** Clamps/rounds a float stick value in [-1, 1] to the wire range. */
 export function quantizeAxis(v: number): number {
   const q = Math.round(v * 127);
-  return q < -127 ? -127 : q > 127 ? 127 : q;
+  return (q < -127 ? -127 : q > 127 ? 127 : q) | 0; // | 0 also turns -0 into 0
+}
+
+/**
+ * Coerces any input into exact wire values (integers in range, no -0). The simulation
+ * calls this on every input so local and network inputs are bit-identical.
+ */
+export function sanitizeInput(f: InputFrame): InputFrame {
+  const ax = (v: number): number => {
+    const q = Math.round(Number.isFinite(v) ? v : 0) | 0;
+    return q < -127 ? -127 : q > 127 ? 127 : q;
+  };
+  return { moveX: ax(f.moveX), moveY: ax(f.moveY), aimX: ax(f.aimX), aimY: ax(f.aimY), aimMode: (f.aimMode | 0) & 3, buttons: (f.buttons | 0) & 0xff };
 }

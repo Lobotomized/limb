@@ -10,7 +10,7 @@ import { closingSpeed, cooldownReady, damageFromImpact, hitStopFor, pairKey, pru
 import { EventSink, type PartRef, type SimEvent } from './events';
 import { killPart, updateDebris } from './fighter';
 import { compileFighter } from './fighter-compile';
-import { ACTION_BUTTONS, EMPTY_INPUT, type InputFrame } from './input-frame';
+import { ACTION_BUTTONS, EMPTY_INPUT, sanitizeInput, type InputFrame } from './input-frame';
 import { updateLocomotion, facingOf } from './locomotion';
 import { endRound, startRound, tickCountdown, tickRoundEnd } from './match';
 import { activeSpin, updateJoints, updateSlots } from './moves';
@@ -174,7 +174,8 @@ function applyDamage(s: SimState, pairs: ContactPair[], kin: Map<number, BodyKin
 }
 
 /** Advances the simulation by one tick. Returns the events of this tick. */
-export function step(s: SimState, inputs: readonly [InputFrame, InputFrame]): SimEvent[] {
+export function step(s: SimState, rawInputs: readonly [InputFrame, InputFrame]): SimEvent[] {
+  const inputs = [sanitizeInput(rawInputs[0]), sanitizeInput(rawInputs[1])] as const;
   const g = s.game;
   const sink = new EventSink(g.tick);
   const t = s.ctx.tuning;
