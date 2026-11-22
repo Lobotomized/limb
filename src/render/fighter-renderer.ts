@@ -142,8 +142,10 @@ export class FighterRenderer {
         const mx = cam.sx(core.x);
         const my = cam.sy(core.y) - rr - (FIGHTER_STYLE.markerSize * scale) / 2;
         const m = FIGHTER_STYLE.markerSize * scale;
-        if (PLAYER[this.player]!.markerShape === 'triangle') g.poly([mx, my - m / 2, mx + m / 2, my + m / 2, mx - m / 2, my + m / 2], true).fill({ color: pcolor });
-        else g.circle(mx, my, m / 2).fill({ color: pcolor });
+        // Dark outline keeps the marker readable over same-colored parts.
+        const edge = { width: FIGHTER_STYLE.markerOutline * scale, color: hex(COLOR.bg900) };
+        if (PLAYER[this.player]!.markerShape === 'triangle') g.poly([mx, my - m / 2, mx + m / 2, my + m / 2, mx - m / 2, my + m / 2], true).fill({ color: pcolor }).stroke(edge);
+        else g.circle(mx, my, m / 2).fill({ color: pcolor }).stroke(edge);
       }
     }
     // Facing chevron just outside the root part.

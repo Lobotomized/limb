@@ -121,6 +121,7 @@ export const FIGHTER_STYLE = {
   corePulseMaxHz: 4,
   markerSize: 12, // px
   markerGap: 10, // px above the core
+  markerOutline: 2,
   facingChevronSize: 9,
   facingChevronGap: 8,
   debrisVisibleMs: 2000,

@@ -35,8 +35,8 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 20. Minimal renderer, local 2P match in browser
 
 ## Phase 7: All fighters
-- [ ] 21. Octopus
-- [ ] 22. Crab
+- [x] 21. Octopus
+- [x] 22. Crab
 
 ## Phase 8: Bots
 - [ ] 23. Bot brain, difficulty, hints

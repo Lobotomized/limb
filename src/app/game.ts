@@ -24,7 +24,8 @@ export async function startGame(host: HTMLElement): Promise<void> {
   devices.attach(window);
   const view = new ArenaView(app, { reducedShake: false, damageNumbers: false });
   app.stage.addChild(view.root);
-  const sim = createMatch({ fighters: [getFighter('humanoid').def, getFighter('humanoid').def], arena: getArena(), seed: 1 });
+  const params = new URLSearchParams(location.search);
+  const sim = createMatch({ fighters: [getFighter(params.get('p1') ?? 'humanoid').def, getFighter(params.get('p2') ?? 'humanoid').def], arena: getArena(), seed: 1 });
   const driver = new LocalDriver(sim, [() => devices.readLocal(0, 'auto'), () => devices.readLocal(1, 'auto')]);
   view.setMatch(sim.ctx);
   const loop = new FixedTickLoop(60);
