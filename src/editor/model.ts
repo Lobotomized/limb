@@ -332,3 +332,12 @@ export function hintWarnings(d: EditorDoc): string[] {
   for (const p of d.bot.shieldParts) if (!parts.has(p)) out.push(`bot hints: no part "${p}" to shield with`);
   return out;
 }
+
+/**
+ * Validation problems that make the live preview unsafe to rebuild (the body itself is broken:
+ * parts, shapes, joints, root/core). Problems only in moves, names or descriptions don't stop the
+ * fighter from simulating, so the preview keeps following the edits.
+ */
+export function previewBlockers(errors: string[]): string[] {
+  return errors.filter((e) => !/^fighter "[^"]*": (moves[[:]|name:|description:|id:)/.test(e));
+}

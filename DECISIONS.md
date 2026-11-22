@@ -96,6 +96,7 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - Editor preview runs in a small walled pen (no ring-out) next to a passive dummy fighter of your choice; P1 controls drive the edited fighter.
 - Undo/redo are whole-document snapshots (fighters are a few KB); typing/dragging updates the preview live and one undo step is recorded when the edit finishes.
 - Mirror copies a limb subtree across the fighter's forward axis (anchors, idle angles and limits flipped, polygons reversed to stay CCW, Left/Right and _l/_r swapped); moves are not mirrored.
+- The editor preview keeps following edits while the only problems are in moves or text (e.g. deleting a limb leaves a move with nothing to move); body problems (parts, shapes, joints) pause it with a banner saying it shows the last working version — a silently stale preview looked like deletes didn't work. The dummy defaults to a different fighter than the one being edited.
 - The ids of existing fighters are read-only in the editor (renaming would create a second folder); new fighters choose their id when created.
 
 ## Balance pass 2 — six-move controls (hard bots, 50 matches per pairing, seeds 1..50)

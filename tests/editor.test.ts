@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { validateFighter } from '../src/core/schema/validate';
 import { convertShape, hitSize } from '../src/editor/geometry';
 import { formatJson } from '../src/editor/json-format';
-import { addPart, deletePart, docFiles, hintWarnings, History, mirrorName, mirrorPart, newFighterFrom, renameJoint, renameMove, renamePart, selectionForError, type EditorDoc } from '../src/editor/model';
+import { addPart, deletePart, previewBlockers, docFiles, hintWarnings, History, mirrorName, mirrorPart, newFighterFrom, renameJoint, renameMove, renamePart, selectionForError, type EditorDoc } from '../src/editor/model';
 import { getFighter } from '../src/registry/fighters';
 import { planSave } from '../tools/vite-editor-plugin';
 
@@ -95,6 +95,17 @@ describe('editor model', () => {
     const r = mirrorPart(d, 'shell_left');
     expect(typeof r).toBe('number');
     expect(validateFighter(d.fighter).filter((e) => e.includes('convex'))).toEqual([]);
+  });
+
+  it('deleting a limb leaves move problems that do not freeze the preview; body problems do', () => {
+    const d = doc('crab');
+    expect(deletePart(d, 'small_arm')).toBeNull();
+    expect(deletePart(d, 'crusher_arm')).toBeNull();
+    const errs = valid(d);
+    expect(errs.some((e) => e.includes('must move something'))).toBe(true);
+    expect(previewBlockers(errs), errs.join(' | ')).toEqual([]);
+    d.fighter.parts[0]!.mass = -1;
+    expect(previewBlockers(valid(d)).some((e) => e.includes('parts[0].mass'))).toBe(true);
   });
 
   it('undo/redo restores snapshots', () => {

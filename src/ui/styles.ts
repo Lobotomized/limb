@@ -165,6 +165,10 @@ export function buildStylesheet(): string {
 .ed-phases { display: flex; flex-direction: column; gap: ${u(SPACE[1])}; }
 .ed-phase-head { padding: ${u(SPACE[1])} ${u(SPACE[2])}; background: ${COLOR.bg700}; border-radius: ${u(RADIUS.sm)}; cursor: pointer; }
 .ed-phase-head.active { background: ${COLOR.bg600}; box-shadow: inset ${u(STROKE.focus)} 0 0 ${COLOR.focus}; }
+.ed-preview-note { position: absolute; top: calc(${u(LAYOUT.editorTopHeight)} + ${u(SPACE[2])}); left: calc(${u(LAYOUT.editorOutlineWidth)} + ${u(SPACE[4])});
+  right: calc(${u(LAYOUT.editorInspectorWidth)} + ${u(SPACE[4])}); padding: ${u(SPACE[2])} ${u(SPACE[3])}; background: ${COLOR.bg800};
+  border-left: ${u(STROKE.focus)} solid ${COLOR.danger}; border-radius: ${u(RADIUS.sm)}; box-shadow: ${SHADOW.panel}; ${type(TYPE.caption)} }
+.ed-preview-note:empty { display: none; }
 .ed-phase { display: flex; flex-direction: column; gap: ${u(SPACE[2])}; padding: ${u(SPACE[2])} 0 ${u(SPACE[2])} ${u(SPACE[3])}; }
 `;
 }

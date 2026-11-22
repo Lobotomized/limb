@@ -44,6 +44,7 @@ import {
   moveFor,
   newFighterFrom,
   parentJointOf,
+  previewBlockers,
   partIndex,
   partTree,
   renameJoint,
@@ -138,6 +139,8 @@ export class FighterEditor {
   private readonly top = el('div', 'ed-top');
   private readonly left = el('div', 'ed-panel ed-left');
   private readonly right = el('div', 'ed-panel ed-right');
+  /** Shown over the preview when it can't follow the edits. */
+  private readonly previewNote = el('div', 'ed-preview-note');
   private readonly onPointer = (e: PointerEvent): void => this.pick(e);
   private readonly onKey = (e: KeyboardEvent): void => this.shortcut(e);
 
@@ -146,10 +149,11 @@ export class FighterEditor {
     private readonly layer: HTMLElement,
     folder?: string,
   ) {
-    this.dummy = host.fighters.find((f) => f.def.id === 'humanoid')?.def.id ?? host.fighters[0]?.def.id ?? '';
+    // The dummy is another fighter, so it is never mistaken for the one being edited.
+    this.dummy = host.fighters.find((f) => f.folder !== folder)?.def.id ?? host.fighters[0]?.def.id ?? '';
     host.app.stage.visible = true;
     host.app.stage.addChild(this.overlay);
-    this.root.append(this.top, this.left, this.right);
+    this.root.append(this.top, this.left, this.right, this.previewNote);
     layer.replaceChildren(this.root);
     window.addEventListener('pointerdown', this.onPointer);
     window.addEventListener('keydown', this.onKey, true);
@@ -830,8 +834,14 @@ export class FighterEditor {
   }
 
   private rebuild(): void {
+    const blockers = previewBlockers(this.errors);
+    if (blockers.length) {
+      // Keep showing the last working version, and say so.
+      this.setPreviewNote(`Preview shows the last working version until this is fixed: ${blockers[0]!.replace(/^fighter "[^"]*": /, '')}`);
+      return;
+    }
     const key = JSON.stringify(this.doc.fighter) + this.dummy;
-    if (this.errors.length || key === this.previewDef) return;
+    if (key === this.previewDef) return this.setPreviewNote('');
     this.previewDef = key;
     const dummy = this.host.fighters.find((f) => f.def.id === this.dummy)?.def ?? this.doc.fighter;
     try {
@@ -843,10 +853,14 @@ export class FighterEditor {
       this.curr = captureFrame(sim);
       this.host.view.setMatch(sim.ctx);
       this.scripted = null;
+      this.setPreviewNote('');
     } catch (e) {
-      this.status = `Preview failed: ${(e as Error).message}`;
-      this.renderTop();
+      this.setPreviewNote(`Preview shows the last working version: ${(e as Error).message}`);
     }
+  }
+
+  private setPreviewNote(text: string): void {
+    if (this.previewNote.textContent !== text) this.previewNote.textContent = text;
   }
 
   frame(dtMs: number): void {
