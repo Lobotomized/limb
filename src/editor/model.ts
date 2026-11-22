@@ -224,6 +224,13 @@ export function addPart(d: EditorDoc, parentId: string): number {
   return def.parts.length - 1;
 }
 
+/** Makes this part the fighter's core (the part whose death loses the round). */
+export function setCorePart(d: EditorDoc, partId: string): string | null {
+  if (partIndex(d.fighter, partId) < 0) return `No part "${partId}".`;
+  d.fighter.corePart = partId;
+  return null;
+}
+
 /** Removes a part, everything attached below it, and every reference to them. */
 export function deletePart(d: EditorDoc, partId: string): string | null {
   const def = d.fighter;

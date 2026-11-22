@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { validateFighter } from '../src/core/schema/validate';
 import { convertShape, hitSize } from '../src/editor/geometry';
 import { formatJson } from '../src/editor/json-format';
-import { addPart, deletePart, previewBlockers, docFiles, hintWarnings, History, mirrorName, mirrorPart, newFighterFrom, renameJoint, renameMove, renamePart, selectionForError, type EditorDoc } from '../src/editor/model';
+import { addPart, deletePart, previewBlockers, docFiles, hintWarnings, History, mirrorName, mirrorPart, newFighterFrom, renameJoint, renameMove, renamePart, selectionForError, setCorePart, type EditorDoc } from '../src/editor/model';
 import { getFighter } from '../src/registry/fighters';
 import { planSave } from '../tools/vite-editor-plugin';
 
@@ -72,6 +72,17 @@ describe('editor model', () => {
     expect(d.bot.shieldParts).not.toContain('forearm_l');
     expect(deletePart(d, 'torso')).toMatch(/root/);
     expect(deletePart(d, 'head')).toMatch(/core/);
+  });
+
+  it('moves the core to another part in one edit, which frees the old core for deletion', () => {
+    const d = doc();
+    expect(setCorePart(d, 'nope')).toMatch(/No part/);
+    expect(d.fighter.corePart).toBe('head');
+    expect(setCorePart(d, 'torso')).toBeNull();
+    expect(d.fighter.corePart).toBe('torso');
+    expect(valid(d)).toEqual([]);
+    expect(deletePart(d, 'head')).toBeNull();
+    expect(valid(d)).toEqual([]);
   });
 
   it('mirrors geometry across the forward axis with swapped names', () => {

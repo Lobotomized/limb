@@ -51,6 +51,7 @@ import {
   renameMove,
   renamePart,
   selectionForError,
+  setCorePart,
   subtreeIds,
   type EditorDoc,
   type Selection,
@@ -569,6 +570,19 @@ export class FighterEditor {
     );
   }
 
+  /** One click to move the lose condition to this part; disabled on the current core. */
+  private makeCoreButton(partId: string): HTMLButtonElement {
+    const isCore = partId === this.doc.fighter.corePart;
+    const b = button(isCore ? '◆ Core part' : 'Make core ◆', () => {
+      const e = setCorePart(this.doc, partId);
+      if (e) return this.flash(e);
+      this.afterChange(true);
+    });
+    b.disabled = isCore;
+    b.title = isCore ? 'This part is the core: when it dies, the round is lost.' : 'Make this the core part: when it dies, the round is lost.';
+    return b;
+  }
+
   private partInspector(index: number): HTMLElement {
     const d = this.doc;
     const def = d.fighter;
@@ -601,6 +615,7 @@ export class FighterEditor {
             this.afterChange(true);
             this.select({ kind: 'part', index: ni });
           }),
+          this.makeCoreButton(p.id),
           button('Mirror to other side', () => {
             const r = mirrorPart(d, p.id);
             if (typeof r === 'string') return this.flash(r);

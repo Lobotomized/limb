@@ -12,7 +12,8 @@ validation, HUD body diagram, fighter-select preview, move list and bot support 
 
 `npm run dev` → main menu → **Fighter editor** (or open `http://localhost:5173/?editor`).
 **New…** copies an existing fighter under a new id; reshape the body (select a part in the outline
-or click it in the preview; **Add limb here**, **Mirror to other side**, **Delete**), edit the six
+or click it in the preview; **Add limb here**, **Make core ◆** (moves the lose condition to that
+part in one click), **Mirror to other side**, **Delete**), edit the six
 moves (phases, joint targets with sliders inside the joint limits, hold/spin/drive; **▶ Play** runs
 the move in the live physics preview, the outline ghost shows the selected phase) and bot hints.
 Problems from the validator are listed on the left (click one to jump to it); **Save** (Ctrl+S) is
