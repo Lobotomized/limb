@@ -10,6 +10,7 @@ import { drawArena } from './arena-renderer';
 import { Camera } from './camera';
 import { Effects, type EffectSettings } from './effects';
 import { FighterRenderer } from './fighter-renderer';
+import { PartLabels } from './part-labels';
 import type { RenderFrame } from './frame';
 import { shapeRadius } from './shapes';
 import { ARENA_STYLE } from './theme';
@@ -21,6 +22,7 @@ export class ArenaView {
   private readonly overlayG = new Graphics();
   readonly camera: Camera;
   readonly effects: Effects;
+  readonly partLabels = new PartLabels();
   private fighters: FighterRenderer[] = [];
   private ctx: SimContext | null = null;
   private timeMs = 0;
@@ -32,12 +34,13 @@ export class ArenaView {
   ) {
     this.camera = new Camera(app.screen.width, app.screen.height);
     this.effects = new Effects(settings);
-    this.root.addChild(this.arenaG, this.partsG, this.overlayG, this.effects.sparkLayer, this.effects.textLayer, this.effects.screenFlash);
+    this.root.addChild(this.arenaG, this.partsG, this.overlayG, this.partLabels.layer, this.effects.sparkLayer, this.effects.textLayer, this.effects.screenFlash);
   }
 
   setMatch(ctx: SimContext): void {
     this.ctx = ctx;
     this.fighters = ctx.compiled.map((cf, i) => new FighterRenderer(cf, i));
+    this.partLabels.setFighters(ctx.compiled);
     this.effects.clear();
     this.snapCamera = true;
   }
@@ -85,5 +88,6 @@ export class ArenaView {
     this.overlayG.clear();
     frame.fighters.forEach((f, i) => this.fighters[i]?.drawParts(this.partsG, this.camera, f, frame.tick, this.timeMs, this.effects.flashFor(i), uiScale));
     frame.fighters.forEach((f, i) => this.fighters[i]?.drawOverlay(this.overlayG, this.camera, f, this.timeMs, uiScale));
+    this.partLabels.draw(this.camera, frame.fighters, ctx.compiled, uiScale);
   }
 }

@@ -72,6 +72,7 @@ export class Game implements UiHost {
     this.uiRoot.append(this.hudLayer, this.screenLayer);
     this.view = new ArenaView(this.app, this.effectSettings());
     this.app.stage.addChild(this.view.root);
+    this.view.partLabels.enabled = this.s.partHealthNumbers;
     this.devices.attach(window);
     window.addEventListener('pointerdown', () => this.synth.resume());
     window.addEventListener('keydown', () => this.synth.resume());
@@ -100,6 +101,7 @@ export class Game implements UiHost {
     setUiScale(this.uiRoot, uiScale(window.innerHeight, this.s.uiScale));
     this.synth.setVolumes({ master: this.s.masterVolume, effects: this.s.effectsVolume });
     this.view?.effects.setSettings(this.effectSettings());
+    if (this.view) this.view.partLabels.enabled = this.s.partHealthNumbers;
     this.match?.hud.setDetailed(this.s.detailedHud);
     if (this.s.fullscreen !== this.platform.isFullscreen()) void this.platform.setFullscreen(this.s.fullscreen);
   }

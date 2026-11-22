@@ -5,6 +5,8 @@ export interface Settings {
   reducedShake: boolean;
   damageNumbers: boolean;
   detailedHud: boolean;
+  /** Current health drawn on every part in the arena. */
+  partHealthNumbers: boolean;
   /** 0.8 .. 1.5 */
   uiScale: number;
   /** 0 .. 1 */
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   reducedShake: false,
   damageNumbers: false,
   detailedHud: false,
+  partHealthNumbers: true,
   uiScale: 1,
   masterVolume: 0.8,
   effectsVolume: 0.8,
@@ -46,6 +49,7 @@ export function sanitizeSettings(raw: unknown): Settings {
   bool('reducedShake');
   bool('damageNumbers');
   bool('detailedHud');
+  bool('partHealthNumbers');
   bool('fullscreen');
   num('uiScale', 0.8, 1.5);
   num('masterVolume', 0, 1);

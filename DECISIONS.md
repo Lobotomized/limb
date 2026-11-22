@@ -69,6 +69,7 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - Part toughness is shown by MAX health tier (fragile ≤ 40, medium 41–99, tough ≥ 100, tokens in `theme.ts`) using outline weight — thin / normal / double with a dark inner rim — never fill lightness, which stays reserved for damage. Tiers are absolute so they compare across fighters.
 - Fighter select shows a toughness map (tier outlines + HP numbers on parts big enough for a label) and a tier list grouping mirrored parts by type ("Upper arm ×2 80").
 - Health-bar track length is proportional to each part's max health on one scale shared by both fighters in the match (the toughest part = full length), with "current/max" numbers.
+- Current health is drawn on every living part in the arena (setting "Health on parts", on by default): number at the shape's centroid, colored by health band with a dark outline; small parts place first and larger parts shift their label inside their own shape to avoid overlaps. This deliberately puts small text on the fighters (an exception to "HUD at the edges") because players asked to read limb health mid-fight; it can be turned off.
 
 ## Final verification (Phase 13)
 - `npm run check`: typecheck + lint + 118 tests (19 files) pass.

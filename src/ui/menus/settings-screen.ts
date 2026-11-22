@@ -8,7 +8,7 @@ import type { MenuItem } from './menu';
 const DEVICES = Object.keys(DEVICE_LABELS) as DeviceId[];
 
 export function settingsScreen(host: UiHost) {
-  const toggle = (label: string, key: 'reducedShake' | 'damageNumbers' | 'detailedHud' | 'fullscreen'): MenuItem => ({
+  const toggle = (label: string, key: 'reducedShake' | 'damageNumbers' | 'detailedHud' | 'partHealthNumbers' | 'fullscreen'): MenuItem => ({
     label,
     value: () => (host.settings()[key] ? 'On' : 'Off'),
     adjust: () => host.updateSettings({ [key]: !host.settings()[key] } as Partial<Settings>),
@@ -31,6 +31,7 @@ export function settingsScreen(host: UiHost) {
       toggle('Reduced shake', 'reducedShake'),
       toggle('Damage numbers', 'damageNumbers'),
       toggle('Detailed HUD', 'detailedHud'),
+      toggle('Health on parts', 'partHealthNumbers'),
       percent('UI scale', 'uiScale', 0.8, 1.5),
       percent('Master volume', 'masterVolume', 0, 1),
       percent('Effects volume', 'effectsVolume', 0, 1),

@@ -164,6 +164,21 @@ export const FIGHTER_STYLE = {
   debrisFadeMs: 1000,
 } as const;
 
+/** Health numbers drawn on parts in the arena (px at 1080p; scales with zoom, clamped). */
+export const PART_LABEL = {
+  size: 11,
+  minSize: 9,
+  maxSize: 13,
+  /** Font px per meter of zoom (so labels shrink when the camera zooms out). */
+  sizePerMeter: 0.11,
+  weight: 600,
+  outline: 3,
+  /** Labels closer than this many font sizes count as overlapping. */
+  minSpacing: 2,
+  /** How far (share of the shape's half-extent) a label may shift to avoid an overlap. */
+  spotShift: 0.75,
+} as const;
+
 /** Combat feedback scales linearly from minimum damage (1) to a big hit. */
 export const FX = {
   bigHitDamage: 30,

@@ -42,6 +42,9 @@ fighter-select screen and the pause screen list every move. Device assignment (w
 keyboard half or gamepad) is in Settings → P1/P2 controls. All bindings live in
 `src/input/bindings.ts`.
 
+Every part shows its current health as a number during the fight (turn it off in Settings → Health on parts).
+The fighter-select screen shows each part's toughness (outline: thin = fragile, double = tough) and max health.
+
 Strategy in one line: **hit with parts that have more health than the part you hit** — damage is
 always equal, so healthy limbs win trades. Protect your core, and stay away from the red ring-out edges.
 
