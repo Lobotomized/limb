@@ -39,10 +39,10 @@ Then continue at step 6 below (tests, balance). The conventions in step 2 still 
      relative angles in (-π, π]); point limbs so their poses avoid ±π.
    - `strength` = max motor torque (N·m); `damping` ≈ 5–10 % of strength is a good start.
    - Tag legs/tentacles/feet `locomotion` (speed scales with how many survive), heavy plates `armor`.
-   - **Exactly six `moves`**: buttons `A`/`B` × directions `neutral`/`back`/`forward` (relative to
-     facing, at the press). Each move is a sequence of phases (targets, speed, ticks, optional
+   - **Exactly six `moves`**: one per move button, `"button": 1` … `6` (no direction: the stick only
+     moves the fighter). Each move is a sequence of phases (targets, speed, ticks, optional
      `hold`, `spin`, `drive`) — follow the add-move skill and make every move interesting, not a
-     plain directional poke. `requires` = parts that must be alive; give each a one-line `description`.
+     plain poke. `requires` = parts that must be alive; give each a one-line `description`.
    - No `Math.sin/cos` in `.ts` content (lint): precompute coordinates.
 3. **Health budget**: total `maxHealth` ≈ 800 (humanoid 849, octopus 784, crab ~690 + heavy armor).
    Remember equal damage: a part's health is what it can *trade*. Each part's max health also sets

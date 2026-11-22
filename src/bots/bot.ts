@@ -11,12 +11,12 @@
 import { distanceToRingOut } from '../core/arena';
 import { partAlive, posesFor } from '../core/fighter';
 import { subtree, type CompiledFighter } from '../core/fighter-compile';
-import { AimMode, ATTACK_BUTTONS, Button, quantizeAxis, type InputFrame } from '../core/input-frame';
+import { AimMode, Button, moveButtonBit, quantizeAxis, type InputFrame } from '../core/input-frame';
 import { facingOf } from '../core/locomotion';
 import { atan2, clamp, cos, sin, type Vec2 } from '../core/math';
 import { moveAvailable } from '../core/moves';
 import { Rng, mixSeed } from '../core/rng';
-import { MOVE_BUTTONS, type FighterBotHints, type MoveDirection } from '../core/schema/fighter-schema';
+import type { FighterBotHints } from '../core/schema/fighter-schema';
 import type { SimState } from '../core/state';
 import { botHintsFor } from '../registry/fighters';
 import { DIFFICULTIES, type Difficulty, type DifficultyId } from './difficulty';
@@ -25,9 +25,8 @@ import { DIFFICULTIES, type Difficulty, type DifficultyId } from './difficulty';
 
 interface MoveModel {
   index: number;
-  /** Attack button bit. */
+  /** Move button bit. */
   button: number;
-  direction: MoveDirection;
   name: string;
   /** Position (root-local, facing +x) of the striking part at the move's farthest point, including drive travel. */
   strike: Vec2;
@@ -114,8 +113,7 @@ function buildModel(cf: CompiledFighter, hints: FighterBotHints): BotModel {
     if (!holdSeen) holdTicks = 2;
     return {
       index: m.index,
-      button: ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] as number,
-      direction: m.direction,
+      button: moveButtonBit(m.button),
       name,
       strike,
       attackPart,
@@ -185,7 +183,7 @@ export interface BotMemory {
   aimNoise: number;
   /** Move to press next tick (-1 none). */
   pending: number;
-  /** Attack button bit being held (-1 none). */
+  /** Move button bit being held (-1 none). */
   heldButton: number;
   holdUntil: number;
   attackReadyAt: number;
@@ -245,12 +243,6 @@ const RAM_BACKOFF_TICKS = 30;
 const SAFE_EDGE = 1.0;
 
 const IDLE: InputFrame = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, aimMode: AimMode.AUTO, buttons: 0 };
-
-function dirVector(dir: MoveDirection, facing: number): Vec2 {
-  if (dir === 'neutral') return { x: 0, y: 0 };
-  const sign = dir === 'forward' ? 1 : -1;
-  return { x: sign * cos(facing), y: sign * sin(facing) };
-}
 
 /** Pure bot step: (state, fighter, memory, rng) -> input. */
 export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff: Difficulty, hints: FighterBotHints, model: BotModel): InputFrame {
@@ -456,7 +448,7 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     buttons: 0,
   };
 
-  // ---- moves: press (with the right stick direction), hold through hold phases, release
+  // ---- moves: press the move's button, hold through hold phases, release
   if (mem.heldButton >= 0) {
     if (g.tick < mem.holdUntil) out.buttons |= mem.heldButton;
     else mem.heldButton = -1;
@@ -468,9 +460,6 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     } else if (!moveAvailable(me, cf, m.index)) {
       mem.pending = -1;
     } else {
-      const d = dirVector(m.direction, facing);
-      out.moveX = quantizeAxis(d.x);
-      out.moveY = quantizeAxis(d.y);
       out.buttons |= bit;
       mem.heldButton = bit;
       mem.holdUntil = g.tick + m.holdTicks + rng.int(0, diff.timingNoise);

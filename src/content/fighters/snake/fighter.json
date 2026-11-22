@@ -160,8 +160,7 @@
   "corePart": "heart",
   "moves": [
     {
-      "button": "A",
-      "direction": "neutral",
+      "button": 1,
       "name": "Strike",
       "description": "Draw the neck back into an S, then lunge jaw-first and recoil.",
       "phases": [
@@ -198,8 +197,7 @@
       "requires": ["head", "jaw"]
     },
     {
-      "button": "B",
-      "direction": "neutral",
+      "button": 2,
       "name": "Tail lash",
       "description": "Hold to cock the tail to the left; release to whip the whole body around tail-first.",
       "phases": [
@@ -231,8 +229,7 @@
       "requires": ["tail_base"]
     },
     {
-      "button": "A",
-      "direction": "back",
+      "button": 3,
       "name": "Coil & lash",
       "description": "Hold to curl neck and tail around your left side; release to lash both open.",
       "phases": [
@@ -267,8 +264,7 @@
       "requires": ["fore_body", "mid_body"]
     },
     {
-      "button": "B",
-      "direction": "back",
+      "button": 4,
       "name": "Sidewinder",
       "description": "Sidewind away to the left in a quick S-wave, out of the line of attack.",
       "phases": [
@@ -328,8 +324,7 @@
       "requires": ["mid_body"]
     },
     {
-      "button": "A",
-      "direction": "forward",
+      "button": 5,
       "name": "Constrict",
       "description": "Slide in alongside them, then curl neck and tail around them and squeeze.",
       "phases": [
@@ -364,8 +359,7 @@
       "requires": ["fore_body", "mid_body", "hind_body"]
     },
     {
-      "button": "B",
-      "direction": "forward",
+      "button": 6,
       "name": "Death roll",
       "description": "Straighten out and spin a full turn: the whole body becomes a sweeping bar.",
       "phases": [

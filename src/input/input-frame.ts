@@ -2,12 +2,12 @@
  * Input frames for the game and the network. The type itself lives in core (the simulation
  * consumes it); this module adds the compact binary wire format.
  *
- * Wire format per frame (6 bytes): moveX i8, moveY i8, aimX i8, aimY i8, aimMode u8, buttons u8.
+ * Wire format per frame (7 bytes): moveX i8, moveY i8, aimX i8, aimY i8, aimMode u8, buttons u16 (big-endian).
  */
-export { AimMode, Button, ATTACK_BUTTONS, ACTION_BUTTONS, EMPTY_INPUT, emptyInput, inputsEqual, quantizeAxis, type InputFrame } from '../core/input-frame';
+export { AimMode, Button, BUTTON_MASK, MOVE_BUTTON_BITS, moveButtonBit, ACTION_BUTTONS, EMPTY_INPUT, emptyInput, inputsEqual, quantizeAxis, type InputFrame } from '../core/input-frame';
 import type { InputFrame } from '../core/input-frame';
 
-export const INPUT_BYTES = 6;
+export const INPUT_BYTES = 7;
 
 export function writeInput(view: DataView, offset: number, f: InputFrame): void {
   view.setInt8(offset, f.moveX);
@@ -15,7 +15,7 @@ export function writeInput(view: DataView, offset: number, f: InputFrame): void 
   view.setInt8(offset + 2, f.aimX);
   view.setInt8(offset + 3, f.aimY);
   view.setUint8(offset + 4, f.aimMode);
-  view.setUint8(offset + 5, f.buttons);
+  view.setUint16(offset + 5, f.buttons);
 }
 
 export function readInput(view: DataView, offset: number): InputFrame {
@@ -25,7 +25,7 @@ export function readInput(view: DataView, offset: number): InputFrame {
     aimX: view.getInt8(offset + 2),
     aimY: view.getInt8(offset + 3),
     aimMode: view.getUint8(offset + 4),
-    buttons: view.getUint8(offset + 5),
+    buttons: view.getUint16(offset + 5),
   };
 }
 

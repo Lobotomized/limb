@@ -5,8 +5,7 @@
  */
 import { Graphics } from 'pixi.js';
 import { createMatch, step } from '../core/simulation';
-import { ATTACK_BUTTONS, emptyInput, type InputFrame } from '../core/input-frame';
-import { MOVE_BUTTONS } from '../core/schema/fighter-schema';
+import { emptyInput, moveButtonBit, type InputFrame } from '../core/input-frame';
 import { moveInputLabel } from '../ui/fighter-preview';
 import type { SimState } from '../core/state';
 import { TUNING, type Tuning } from '../core/tuning';
@@ -37,7 +36,7 @@ export class Sandbox {
   private readonly logLines: string[] = [];
   private markers: Marker[] = [];
   /** Scripted move: (move index, ticks left, direction stick, press tick). */
-  private scripted: { move: number; left: number; stick: [number, number]; first: boolean } | null = null;
+  private scripted: { move: number; left: number } | null = null;
 
   constructor(
     private readonly game: Game,
@@ -104,12 +103,8 @@ export class Sandbox {
   }
 
   private trigger(move: number): void {
-    const m = this.sim.ctx.compiled[0].moves[move]!;
-    const f = this.sim.physics.pose(this.sim.game.fighters[0]!.parts[this.sim.ctx.compiled[0].root]!.body).angle;
-    const rel = { neutral: null, forward: 0, back: Math.PI }[m.direction];
-    const stick: [number, number] = rel === null ? [0, 0] : [Math.round(cos(f + rel) * 127), Math.round(sin(f + rel) * 127)];
     // Hold long enough to see hold phases (guards, wind-ups) before releasing.
-    this.scripted = { move, left: 50, stick, first: true };
+    this.scripted = { move, left: 50 };
   }
 
   frame(dtMs: number, keys: string[]): void {
@@ -119,12 +114,7 @@ export class Sandbox {
       let p1: InputFrame = this.game.devices.readSolo();
       if (this.scripted) {
         const m = this.sim.ctx.compiled[0].moves[this.scripted.move]!;
-        p1 = { ...p1, buttons: p1.buttons | ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)]! };
-        if (this.scripted.first) {
-          p1.moveX = this.scripted.stick[0];
-          p1.moveY = this.scripted.stick[1];
-          this.scripted.first = false;
-        }
+        p1 = { ...p1, buttons: p1.buttons | moveButtonBit(m.button) };
         if (--this.scripted.left <= 0) this.scripted = null;
       }
       const events = step(this.sim, [p1, emptyInput()]);

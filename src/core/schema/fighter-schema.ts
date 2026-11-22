@@ -44,13 +44,12 @@ export interface JointDef {
   idleAngle: number;
 }
 
-/** The two attack buttons. Every fighter has exactly six moves: A/B × neutral/back/forward. */
-export type MoveButton = 'A' | 'B';
-export const MOVE_BUTTONS: readonly MoveButton[] = ['A', 'B'];
-
-/** Movement-stick direction when the button is pressed, relative to facing. Sideways counts as neutral. */
-export type MoveDirection = 'neutral' | 'back' | 'forward';
-export const MOVE_DIRECTIONS: readonly MoveDirection[] = ['neutral', 'back', 'forward'];
+/**
+ * The six move buttons. Every fighter has exactly six moves, one per button. A move is
+ * triggered by its button alone; the movement stick only moves the fighter.
+ */
+export type MoveButton = 1 | 2 | 3 | 4 | 5 | 6;
+export const MOVE_BUTTONS: readonly MoveButton[] = [1, 2, 3, 4, 5, 6];
 
 /**
  * One step of a move. Phases run in order; each one retargets some joints and may spin or
@@ -83,9 +82,8 @@ export interface MovePhase {
 }
 
 export interface MoveDef {
-  /** Input: attack button + stick direction (relative to facing) at the moment of the press. */
+  /** Input: the move button (1-6) that triggers this move. */
   button: MoveButton;
-  direction: MoveDirection;
   name: string;
   /** One short line shown in the move list. */
   description: string;
@@ -117,7 +115,7 @@ export interface FighterDef {
   joints: JointDef[];
   rootPart: string;
   corePart: string;
-  /** Exactly six moves, one per button (A, B) × direction (neutral, back, forward). */
+  /** Exactly six moves, one per move button (1-6). */
   moves: MoveDef[];
   locomotion: LocomotionDef;
   /** Extra fighter-level fields added by abilities, keyed by ability id. */

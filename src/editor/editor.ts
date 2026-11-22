@@ -11,12 +11,11 @@
 import { Graphics, type Application } from 'pixi.js';
 import { discoverAbilities } from '../core/abilities/registry';
 import { posesFor } from '../core/fighter';
-import { ATTACK_BUTTONS, emptyInput, type InputFrame } from '../core/input-frame';
+import { emptyInput, moveButtonBit, type InputFrame } from '../core/input-frame';
 import { FixedTickLoop } from '../core/loop';
 import { cos, sin } from '../core/math';
 import type { ArenaDef } from '../core/schema/arena-schema';
 import type { MovePhase, PartDef } from '../core/schema/fighter-schema';
-import { MOVE_BUTTONS } from '../core/schema/fighter-schema';
 import { validateFighter } from '../core/schema/validate';
 import { createMatch, step } from '../core/simulation';
 import type { SimState } from '../core/state';
@@ -132,7 +131,7 @@ export class FighterEditor {
   private readonly loop = new FixedTickLoop(60);
   private prev: RenderFrame | null = null;
   private curr: RenderFrame | null = null;
-  private scripted: { move: number; tick: number; hold: number; stick: [number, number] } | null = null;
+  private scripted: { move: number; tick: number; hold: number } | null = null;
   private readonly overlay = new Graphics();
   private readonly abilities = discoverAbilities();
 
@@ -407,8 +406,8 @@ export class FighterEditor {
       body.append(it);
     }
     const moves = el('div', 'ed-list');
-    for (const inp of MOVE_INPUTS) {
-      const mi = moveFor(def, inp.button, inp.direction);
+    for (const button of MOVE_INPUTS) {
+      const mi = moveFor(def, button);
       const m = def.moves[mi];
       if (!m) continue;
       moves.append(this.item(`${moveInputLabel(m)}  ·  ${m.name}`, { kind: 'move', index: mi, phase: 0 }, s.kind === 'move' && s.index === mi));
@@ -837,15 +836,13 @@ export class FighterEditor {
   private play(move: number, extraHold = 0): void {
     const m = this.doc.fighter.moves[move];
     if (!m || !this.sim) return;
-    // Hold the button through the first hold phase (plus extra), stick only on the press tick.
+    // Hold the button through the first hold phase (plus extra).
     let hold = 0;
     for (const p of m.phases) {
       hold += p.ticks;
       if (p.hold) break;
     }
-    const f = this.sim.physics.pose(this.sim.game.fighters[0]!.parts[this.sim.ctx.compiled[0].root]!.body).angle;
-    const sign = m.direction === 'forward' ? 1 : m.direction === 'back' ? -1 : 0;
-    this.scripted = { move, tick: 0, hold: hold + extraHold, stick: [Math.round(sign * cos(f) * 127), Math.round(sign * sin(f) * 127)] };
+    this.scripted = { move, tick: 0, hold: hold + extraHold };
   }
 
   private rebuild(): void {
@@ -892,8 +889,7 @@ export class FighterEditor {
       const sc = this.scripted;
       if (sc) {
         const m = sim.ctx.compiled[0].moves[sc.move];
-        if (m && sc.tick < sc.hold) p1 = { ...p1, buttons: p1.buttons | ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)]! };
-        if (sc.tick === 0) p1 = { ...p1, moveX: sc.stick[0], moveY: sc.stick[1] };
+        if (m && sc.tick < sc.hold) p1 = { ...p1, buttons: p1.buttons | moveButtonBit(m.button) };
         if (++sc.tick > sc.hold + 2) this.scripted = null;
       }
       const events = step(sim, [p1, emptyInput()]);

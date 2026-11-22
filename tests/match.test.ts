@@ -5,7 +5,7 @@ import { ballMatch, place, idle, hits } from './ball';
 import { killPart } from '../src/core/fighter';
 import { EventSink, type SimEvent } from '../src/core/events';
 import { moveAvailable } from '../src/core/moves';
-import { Button } from '../src/core/input-frame';
+import { moveButtonBit } from '../src/core/input-frame';
 import { defaultTuning } from '../src/core/tuning';
 
 beforeAll(setup);
@@ -31,8 +31,9 @@ describe('part death', () => {
     const haymaker = cf.def.moves.findIndex((m) => m.name === 'Haymaker'); // right arm only
     expect(moveAvailable(f, cf, oneTwo)).toBe(false);
     expect(moveAvailable(f, cf, haymaker)).toBe(true);
-    // Pressing A (neutral) now does nothing.
-    const ev = run(s, 5, (t) => [input({ buttons: t % 2 ? Button.ATTACK_A : 0 }), input({})]);
+    // Pressing One-two's button now does nothing.
+    const bit = moveButtonBit(cf.def.moves[oneTwo]!.button);
+    const ev = run(s, 5, (t) => [input({ buttons: t % 2 ? bit : 0 }), input({})]);
     expect(ofType(ev, 'moveStarted')).toEqual([]);
     // Debris is removed after its lifetime.
     run(s, T.debrisTicks + 2, () => [input({}), input({})]);

@@ -2,18 +2,31 @@
  * One player's input for one tick. This is what the simulation, bots and the network see.
  * Sticks are quantized to integers in [-127, 127] so inputs are exact and compact.
  * The format already carries two spare `action` buttons for future abilities.
+ * Moves are triggered by a move button alone; the movement stick never selects a move.
  */
 export const Button = {
-  /** Attack buttons. Bits 2-3 are unused (reserved). */
-  ATTACK_A: 1 << 0,
-  ATTACK_B: 1 << 1,
-  DASH: 1 << 4,
-  ACTION1: 1 << 5,
-  ACTION2: 1 << 6,
+  /** Move buttons 1-6: each one triggers exactly one move. */
+  MOVE1: 1 << 0,
+  MOVE2: 1 << 1,
+  MOVE3: 1 << 2,
+  MOVE4: 1 << 3,
+  MOVE5: 1 << 4,
+  MOVE6: 1 << 5,
+  DASH: 1 << 6,
+  ACTION1: 1 << 7,
+  ACTION2: 1 << 8,
 } as const;
 
-/** Attack button bits in MOVE_BUTTONS order (A, B). */
-export const ATTACK_BUTTONS = [Button.ATTACK_A, Button.ATTACK_B] as const;
+/** All valid button bits. */
+export const BUTTON_MASK = 0x1ff;
+
+/** Move button bits in MOVE_BUTTONS order (1..6). */
+export const MOVE_BUTTON_BITS = [Button.MOVE1, Button.MOVE2, Button.MOVE3, Button.MOVE4, Button.MOVE5, Button.MOVE6] as const;
+
+/** The input bit for move button 1..6. */
+export function moveButtonBit(button: number): number {
+  return MOVE_BUTTON_BITS[button - 1] ?? 0;
+}
 export const ACTION_BUTTONS = [Button.ACTION1, Button.ACTION2] as const;
 
 /** How facing is controlled this tick. */
@@ -65,5 +78,5 @@ export function sanitizeInput(f: InputFrame): InputFrame {
     const q = Math.round(Number.isFinite(v) ? v : 0) | 0;
     return q < -127 ? -127 : q > 127 ? 127 : q;
   };
-  return { moveX: ax(f.moveX), moveY: ax(f.moveY), aimX: ax(f.aimX), aimY: ax(f.aimY), aimMode: (f.aimMode | 0) & 3, buttons: (f.buttons | 0) & 0xff };
+  return { moveX: ax(f.moveX), moveY: ax(f.moveY), aimX: ax(f.aimX), aimY: ax(f.aimY), aimMode: (f.aimMode | 0) & 3, buttons: (f.buttons | 0) & BUTTON_MASK };
 }

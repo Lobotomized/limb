@@ -1,31 +1,29 @@
 /** Fighter select preview: silhouette (core highlighted), stats and the generated move list. */
 import { compileFighter } from '../core/fighter-compile';
-import { MOVE_BUTTONS, MOVE_DIRECTIONS, type FighterDef, type MoveDef, type MoveDirection } from '../core/schema/fighter-schema';
+import { MOVE_BUTTONS, type FighterDef, type MoveDef } from '../core/schema/fighter-schema';
+import { moveButtonHint } from '../input/bindings';
 import { HUD, LAYOUT, TOUGHNESS, toughnessTier, type ToughnessTier } from '../render/theme';
 import { el, svg } from './dom';
 import { buildBodyDiagram } from './hud/body-diagram';
 
-const DIR_LABEL: Record<MoveDirection, string> = { neutral: '', back: 'Back + ', forward: 'Fwd + ' };
-
-/** "A", "Back + B", "Fwd + A". */
-export function moveInputLabel(m: Pick<MoveDef, 'button' | 'direction'>): string {
-  return `${DIR_LABEL[m.direction]}${m.button}`;
+/** The move's button number: "1" .. "6". */
+export function moveInputLabel(m: Pick<MoveDef, 'button'>): string {
+  return String(m.button);
 }
 
-/** The six moves in input order (A, B, Back + A, Back + B, Fwd + A, Fwd + B) with descriptions. */
+/** The six moves in button order (1-6) with key hints and descriptions. */
 export function moveList(def: FighterDef, available?: (moveIndex: number) => boolean): HTMLElement {
   const list = el('div', 'movelist');
-  for (const d of MOVE_DIRECTIONS)
-    for (const b of MOVE_BUTTONS) {
-      const i = def.moves.findIndex((m) => m.button === b && m.direction === d);
-      const m = def.moves[i];
-      if (!m) continue;
-      const disabled = available ? !available(i) : false;
-      list.append(
-        el('span', `slot${disabled ? ' disabled' : ''}`, moveInputLabel(m)),
-        el('span', disabled ? 'disabled' : '', el('span', '', m.name), el('span', 'ink-muted', ` — ${m.description}`)),
-      );
-    }
+  for (const b of MOVE_BUTTONS) {
+    const i = def.moves.findIndex((m) => m.button === b);
+    const m = def.moves[i];
+    if (!m) continue;
+    const disabled = available ? !available(i) : false;
+    list.append(
+      el('span', `slot${disabled ? ' disabled' : ''}`, `${moveInputLabel(m)}  ${moveButtonHint(b)}`),
+      el('span', disabled ? 'disabled' : '', el('span', '', m.name), el('span', 'ink-muted', ` — ${m.description}`)),
+    );
+  }
   return list;
 }
 

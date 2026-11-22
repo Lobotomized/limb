@@ -39,13 +39,13 @@ the dev server; the game picks the fighter up immediately (Ctrl+S save, Ctrl+Z /
 | --- | --- | --- | --- |
 | Move | W A S D | Arrow keys | Left stick |
 | Turn | Q / E (otherwise you face the opponent) | Numpad 7 / 9 (or , / .) | Right stick aims (release = face opponent) |
-| Attack A / B | F / G | Numpad 1 / 2 (or J / K) | X / Y |
-| Dash | Left Shift | Numpad 0 (or Right Shift) | RB or A |
+| Moves 1 / 2 / 3 | F / G / H | Numpad 1 / 2 / 3 (or J / K / L) | X / Y / B |
+| Moves 4 / 5 / 6 | R / T / Y | Numpad 4 / 5 / 6 (or U / I / O) | LB / RB / RT |
+| Dash | Left Shift | Numpad 0 (or Right Shift) | A or LT |
 | Pause | Esc | Esc | Start |
 
-Every fighter has **six moves**: **A**, **B**, **Back + A**, **Back + B**, **Forward + A** and
-**Forward + B**. *Back*/*forward* is the movement stick at the moment you press, relative to where
-you face (sideways or no stick = plain A/B). A move is a little sequence — combos, wind-ups you hold
+Every fighter has **six moves**, one per move button (1–6). The button alone picks the move;
+the movement stick only moves you. A move is a little sequence — combos, wind-ups you hold
 and release, spins, lunges, hops and sidesteps — and plays out on its own; holding the button keeps
 a guard or a cocked swing going. A press during a move is buffered for the next one. The
 fighter-select screen lists every move with a one-line description. Device assignment (who uses which

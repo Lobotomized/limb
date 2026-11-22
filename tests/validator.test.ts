@@ -41,11 +41,11 @@ describe('validator', () => {
     d.joints.push({ ...d.joints[1]!, id: 'extra', parent: 'head' });
     expectError(d, 'already has a parent joint');
   });
-  it('requires exactly one move per button + direction', () => {
+  it('requires exactly one move per button', () => {
     const d = base();
-    d.moves[1]!.button = 'A'; // B/neutral now duplicates A/neutral
-    expectError(d, 'moves[1]', 'already uses neutral + A');
-    expectError(d, 'moves', 'missing a move for neutral + B');
+    d.moves[1]!.button = 1; // button 2's move now duplicates button 1
+    expectError(d, 'moves[1]', 'already uses button 1');
+    expectError(d, 'moves', 'missing a move for button 2');
     const e = base();
     e.moves.pop();
     expectError(e, 'moves', 'exactly 6 moves are required (got 5)');
@@ -61,10 +61,10 @@ describe('validator', () => {
   });
   it('rejects moves with unknown buttons, joints or parts', () => {
     const d = base();
-    (d.moves[0] as { button: string }).button = 'C';
+    (d.moves[0] as unknown as { button: number }).button = 7;
     d.moves[1]!.phases[0]!.targets[0]!.joint = 'knee';
     d.moves[2]!.requires = ['tail'];
-    expectError(d, 'moves[0]', 'button', 'must be one of A, B');
+    expectError(d, 'moves[0]', 'button', 'must be one of 1, 2, 3, 4, 5, 6');
     expectError(d, 'moves[1]', 'unknown joint "knee"');
     expectError(d, 'moves[2]', 'unknown part "tail"');
   });

@@ -11,8 +11,8 @@ export interface KeyboardBinding {
   right: string[];
   turnLeft: string[];
   turnRight: string[];
-  /** Attack buttons A and B. */
-  attacks: [string[], string[]];
+  /** Move buttons 1-6 (each triggers one move). */
+  moves: [string[], string[], string[], string[], string[], string[]];
   dash: string[];
   /** Spare buttons for future abilities (ignored today). */
   actions: [string[], string[]];
@@ -22,7 +22,8 @@ export interface KeyboardBinding {
 export interface GamepadBinding {
   moveAxes: [number, number];
   aimAxes: [number, number];
-  attacks: [number, number];
+  /** Move buttons 1-6 (each triggers one move). */
+  moves: [number, number, number, number, number, number];
   dash: number[];
   actions: [number[], number[]];
   pause: number[];
@@ -38,9 +39,10 @@ export const KEYBOARD_P1: KeyboardBinding = {
   right: ['KeyD'],
   turnLeft: ['KeyQ'],
   turnRight: ['KeyE'],
-  attacks: [['KeyF'], ['KeyG']],
+  // Moves 1-3 on the home row, 4-6 on the row above.
+  moves: [['KeyF'], ['KeyG'], ['KeyH'], ['KeyR'], ['KeyT'], ['KeyY']],
   dash: ['ShiftLeft'],
-  actions: [['KeyR'], ['KeyV']],
+  actions: [['KeyV'], ['KeyC']],
   pause: ['Escape'],
 };
 
@@ -54,22 +56,36 @@ export const KEYBOARD_P2: KeyboardBinding = {
   right: ['ArrowRight'],
   turnLeft: ['Numpad7', 'Comma'],
   turnRight: ['Numpad9', 'Period'],
-  attacks: [['Numpad1', 'KeyJ'], ['Numpad2', 'KeyK']],
+  // Moves 1-3 on numpad 1-3 / J K L, 4-6 on numpad 4-6 / U I O.
+  moves: [['Numpad1', 'KeyJ'], ['Numpad2', 'KeyK'], ['Numpad3', 'KeyL'], ['Numpad4', 'KeyU'], ['Numpad5', 'KeyI'], ['Numpad6', 'KeyO']],
   dash: ['Numpad0', 'ShiftRight'],
-  actions: [['NumpadAdd', 'KeyO'], ['NumpadEnter', 'KeyU']],
+  actions: [['NumpadAdd', 'KeyP'], ['NumpadEnter', 'Semicolon']],
   pause: ['Escape'],
 };
 
-/** Twin-stick default: left stick move, right stick aim, X = attack A, Y = attack B, RB dash, Start pause. */
+/**
+ * Twin-stick default: left stick move, right stick aim, X Y B LB RB RT = moves 1-6, A or LT dash,
+ * Start pause. A (menu select) never starts a move, so confirming a menu can't trigger one.
+ */
 export const GAMEPAD_DEFAULT: GamepadBinding = {
   moveAxes: [0, 1],
   aimAxes: [2, 3],
-  attacks: [2, 3], // X, Y
-  dash: [5, 0], // RB, A
-  actions: [[4], [7]], // LB, RT (spare)
+  moves: [2, 3, 1, 4, 5, 7], // X, Y, B, LB, RB, RT
+  dash: [0, 6], // A, LT
+  actions: [[10], [11]], // L3, R3 (spare)
   pause: [9], // Start
   deadzone: 0.25,
 };
+
+/** W3C standard-mapping button names, for UI hints. */
+export const PAD_BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'L3', 'R3'];
+
+/** Short hint for move button 1-6 on P1's keyboard and on a gamepad, e.g. "F / A". */
+export function moveButtonHint(button: number): string {
+  const key = (KEYBOARD_P1.moves[button - 1]?.[0] ?? '').replace(/^Key/, '');
+  const pad = PAD_BUTTON_NAMES[GAMEPAD_DEFAULT.moves[button - 1] ?? -1] ?? '';
+  return `${key} / ${pad}`;
+}
 
 /** Menu navigation keys (any keyboard). */
 export const MENU_KEYS = {

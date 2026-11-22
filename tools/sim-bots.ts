@@ -193,7 +193,7 @@ function report(results: { job: Job; r: BotMatchResult }[], args: Args): void {
       dmgByType.set(id, dm);
       const mu = moveUse.get(id) ?? new Map<string, number>();
       def.moves.forEach((m, i) => {
-        const key = `${m.name} (${m.direction === 'neutral' ? '' : `${m.direction}+`}${m.button})`;
+        const key = `${m.name} (${m.button})`;
         mu.set(key, (mu.get(key) ?? 0) + (r.moveUses[side]?.[i] ?? 0));
       });
       moveUse.set(id, mu);

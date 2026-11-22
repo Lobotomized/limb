@@ -62,7 +62,7 @@ describe('rollback netcode', () => {
   it('encodes packets compactly and round-trips them', () => {
     const p = { type: 1 as const, ack: 41, first: 40, inputs: [{ moveX: -3, moveY: 127, aimX: 0, aimY: -127, aimMode: 1, buttons: 0x55 }], senderTick: 44 };
     const bytes = encodePacket(p);
-    expect(bytes.length).toBe(1 + 4 + 4 + 1 + 6 + 4);
+    expect(bytes.length).toBe(1 + 4 + 4 + 1 + 7 + 4);
     expect(decodePacket(bytes)).toEqual(p);
     expect(decodePacket(encodePacket({ type: 2, tick: 600, hash: '0123456789abcdef' }))).toEqual({ type: 2, tick: 600, hash: '0123456789abcdef' });
     expect(decodePacket(new Uint8Array([99]))).toBeNull();

@@ -61,8 +61,6 @@ export const TUNING = {
   moveBufferTicks: 10,
   /** Default cap on how long a `hold` phase can be held past its own ticks. */
   moveMaxHoldTicks: 180,
-  /** Stick counts as forward/back when its direction's dot product with facing exceeds this (sideways = neutral). */
-  moveDirectionDot: 0.38,
   /** Drive phases may push the root this many times harder than walking. */
   driveForceScale: 3,
 
@@ -76,7 +74,7 @@ export const TUNING = {
   /** Turn controller: desired angular velocity per radian of facing error. */
   turnGain: 7,
   dashCooldownTicks: 45,
-  /** Stick deadzone for movement and move-direction selection (0..1). */
+  /** Stick deadzone for movement (0..1). */
   stickDeadzone: 0.3,
 } as const;
 

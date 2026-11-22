@@ -15,8 +15,8 @@ online PvP with rollback netcode (WebRTC in browsers, Steam networking in the de
 6. **Moves are movements.** A move only changes the positions of the fighter's own parts, driven at a set speed by physics. There are no hitboxes, no hit priority and no special attack logic. Whatever touches, collides.
 7. **Physical bodies.** Parts bounce off each other and have inertia. Each part has a mass, so heavy parts are hard to push and light parts get knocked around. Each part also has a strength: how hard its joint pushes toward its target position. A strong limb powers through a light obstacle; a weak one gets pushed aside.
 
-Controls: every fighter has **exactly six moves** — attack buttons A/B × stick direction
-neutral/back/forward (relative to facing, at the press; sideways = neutral). A move is a sequence of
+Controls: every fighter has **exactly six moves**, one per move button 1–6 (`MoveDef.button`).
+The button alone picks the move; the movement stick only moves the fighter. A move is a sequence of
 phases (joint targets + speed + ticks, optional `hold`, `spin`, `drive`); one move at a time, presses
 during a move are buffered. See the add-move skill.
 
@@ -34,7 +34,7 @@ nextState = step(state, inputs)      // src/core/simulation.ts, fixed 60 ticks/s
 ```
 - `src/core/` — deterministic simulation: `simulation.ts` (step), `state.ts` (types, save/restore,
   hash), `physics.ts` (Rapier wrapper; meters, **y up**, CCW radians), `damage.ts`, `fighter.ts`
-  (build/detach), `fighter-compile.ts` (id→index maps, accumulated move phases), `moves.ts` (A/B + direction → phased moves), `locomotion.ts` (walk, turn, dash, move drive), `match.ts`
+  (build/detach), `fighter-compile.ts` (id→index maps, accumulated move phases), `moves.ts` (move button 1–6 → phased moves), `locomotion.ts` (walk, turn, dash, move drive), `match.ts`
   (rounds, hit-stop), `arena.ts`, `events.ts`, `math.ts`, `rng.ts`, `hash.ts`, `tuning.ts`
   (ALL global constants), `input-frame.ts`, `loop.ts` (fixed-tick accumulator),
   `abilities/` (plugin interface + auto-discovery; **no abilities ship**), `schema/` (fighter &

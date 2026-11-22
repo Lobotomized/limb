@@ -1,5 +1,5 @@
 /** Gamepad polling (W3C standard mapping) and conversion to InputFrames. */
-import { AimMode, Button, ATTACK_BUTTONS, ACTION_BUTTONS, quantizeAxis, emptyInput, type InputFrame } from './input-frame';
+import { AimMode, Button, MOVE_BUTTON_BITS, ACTION_BUTTONS, quantizeAxis, emptyInput, type InputFrame } from './input-frame';
 import type { GamepadBinding } from './bindings';
 
 export interface PadSnapshot {
@@ -33,8 +33,8 @@ export function padToInput(p: PadSnapshot | undefined, b: GamepadBinding): Input
   const [mx, my] = radial(p.axes[b.moveAxes[0]] ?? 0, p.axes[b.moveAxes[1]] ?? 0, b.deadzone);
   const [ax, ay] = radial(p.axes[b.aimAxes[0]] ?? 0, p.axes[b.aimAxes[1]] ?? 0, b.deadzone);
   let buttons = 0;
-  b.attacks.forEach((bi, i) => {
-    if (p.buttons[bi]) buttons |= ATTACK_BUTTONS[i]!;
+  b.moves.forEach((bi, i) => {
+    if (p.buttons[bi]) buttons |= MOVE_BUTTON_BITS[i]!;
   });
   if (b.dash.some((bi) => p.buttons[bi])) buttons |= Button.DASH;
   b.actions.forEach((list, i) => {

@@ -1,32 +1,20 @@
 /**
- * Moves: attack button (A/B) + stick direction (neutral/back/forward) -> a sequence of phases.
+ * Moves: move button (1-6) -> a sequence of phases.
  *
- * Every fighter has exactly six moves. Pressing a button starts the move for the stick
- * direction at that moment (relative to facing; sideways counts as neutral). A fighter performs
- * one move at a time: its phases play in order, each retargeting joints (and optionally
+ * Every fighter has exactly six moves, one per move button. Pressing a button starts its move;
+ * the movement stick plays no part in choosing it (directions are only for movement). A fighter
+ * performs one move at a time: its phases play in order, each retargeting joints (and optionally
  * spinning or driving the body); `hold` phases last while the button stays held. A press during
  * a move is buffered and starts when the move ends. When the move ends, joints travel back to
  * idle at `returnSpeed`. Moves only change motor targets and body drive. Physics does the rest.
  */
-import { moveKey, type CompiledFighter, type CompiledPhase } from './fighter-compile';
+import type { CompiledFighter, CompiledPhase } from './fighter-compile';
 import type { EventSink } from './events';
 import { partAlive } from './fighter';
-import { ATTACK_BUTTONS, type InputFrame } from './input-frame';
-import { approach, cos, sin } from './math';
-import { MOVE_BUTTONS, type MoveButton, type MoveDirection } from './schema/fighter-schema';
+import { MOVE_BUTTON_BITS, moveButtonBit, type InputFrame } from './input-frame';
+import { approach } from './math';
+import { MOVE_BUTTONS, type MoveButton } from './schema/fighter-schema';
 import type { FighterState, SimState } from './state';
-
-/** Classifies the movement stick relative to facing: forward, back, or neutral (deadzone / sideways). */
-export function stickDirection(input: InputFrame, facing: number, deadzone: number, dirDot: number): MoveDirection {
-  const mx = input.moveX / 127;
-  const my = input.moveY / 127;
-  const len2 = mx * mx + my * my;
-  if (len2 < deadzone * deadzone) return 'neutral';
-  const dot = (mx * cos(facing) + my * sin(facing)) / Math.sqrt(len2);
-  if (dot > dirDot) return 'forward';
-  if (dot < -dirDot) return 'back';
-  return 'neutral';
-}
 
 /** A move is usable if every part it requires is alive and attached. */
 export function moveAvailable(f: FighterState, cf: CompiledFighter, move: number): boolean {
@@ -34,9 +22,9 @@ export function moveAvailable(f: FighterState, cf: CompiledFighter, move: number
   return !!m && m.requires.every((r) => partAlive(f, r));
 }
 
-/** Resolves button + direction to a move index, or -1. */
-export function resolveMove(cf: CompiledFighter, button: MoveButton, dir: MoveDirection): number {
-  return cf.moveByInput.get(moveKey(button, dir)) ?? -1;
+/** Resolves a move button to a move index, or -1. */
+export function resolveMove(cf: CompiledFighter, button: MoveButton): number {
+  return cf.moveByButton[button - 1] ?? -1;
 }
 
 /** The phase the fighter is in, or null when no move is active. */
@@ -58,8 +46,8 @@ function startMove(s: SimState, fi: number, mi: number, held: boolean, sink: Eve
   sink.emit({ type: 'moveStarted', fighter: fi, move: mi });
 }
 
-/** Advances the active move, then handles attack-button presses for one fighter this tick. */
-export function updateMoves(s: SimState, fi: number, input: InputFrame, facing: number, sink: EventSink): void {
+/** Advances the active move, then handles move-button presses for one fighter this tick. */
+export function updateMoves(s: SimState, fi: number, input: InputFrame, sink: EventSink): void {
   const f = s.game.fighters[fi]!;
   const cf = s.ctx.compiled[fi]!;
   const t = s.ctx.tuning;
@@ -69,7 +57,7 @@ export function updateMoves(s: SimState, fi: number, input: InputFrame, facing: 
   // ---- advance the active move
   if (a.move >= 0) {
     const m = cf.moves[a.move]!;
-    a.held = a.held && (input.buttons & (ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] as number)) !== 0;
+    a.held = a.held && (input.buttons & moveButtonBit(m.button)) !== 0;
     a.phaseTick++;
     for (;;) {
       const p = m.phases[a.phase];
@@ -86,20 +74,19 @@ export function updateMoves(s: SimState, fi: number, input: InputFrame, facing: 
         const q = a.queued;
         a.queued = -1;
         if (tick - a.queuedTick <= t.moveBufferTicks && moveAvailable(f, cf, q)) {
-          const bit = ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(cf.moves[q]!.button)] as number;
+          const bit = moveButtonBit(cf.moves[q]!.button);
           startMove(s, fi, q, (input.buttons & bit) !== 0, sink);
         }
       }
     }
   }
 
-  // ---- new presses (A before B if both land on the same tick)
+  // ---- new presses (the lowest button number wins if several land on the same tick)
   const pressed = input.buttons & ~f.prevButtons;
   for (let bi = 0; bi < MOVE_BUTTONS.length; bi++) {
-    const bit = ATTACK_BUTTONS[bi] as number;
+    const bit = MOVE_BUTTON_BITS[bi] as number;
     if (!(pressed & bit)) continue;
-    const dir = stickDirection(input, facing, t.stickDeadzone, t.moveDirectionDot);
-    const mi = resolveMove(cf, MOVE_BUTTONS[bi]!, dir);
+    const mi = resolveMove(cf, MOVE_BUTTONS[bi]!);
     if (mi < 0 || !moveAvailable(f, cf, mi)) continue; // unavailable: pressing does nothing
     if (a.move < 0) startMove(s, fi, mi, true, sink);
     else if (a.queued < 0) {

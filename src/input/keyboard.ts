@@ -1,5 +1,5 @@
 /** Keyboard state tracking and conversion to InputFrames. */
-import { AimMode, Button, ATTACK_BUTTONS, ACTION_BUTTONS, quantizeAxis, type InputFrame } from './input-frame';
+import { AimMode, Button, MOVE_BUTTON_BITS, ACTION_BUTTONS, quantizeAxis, type InputFrame } from './input-frame';
 import type { KeyboardBinding } from './bindings';
 
 export class KeyboardState {
@@ -50,8 +50,8 @@ export class KeyboardState {
       y *= Math.SQRT1_2;
     }
     let buttons = 0;
-    b.attacks.forEach((codes, i) => {
-      if (this.any(codes)) buttons |= ATTACK_BUTTONS[i]!;
+    b.moves.forEach((codes, i) => {
+      if (this.any(codes)) buttons |= MOVE_BUTTON_BITS[i]!;
     });
     if (this.any(b.dash)) buttons |= Button.DASH;
     b.actions.forEach((codes, i) => {

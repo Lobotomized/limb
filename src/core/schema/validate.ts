@@ -4,7 +4,7 @@
  */
 import type { Ability } from '../abilities/ability';
 import type { ArenaDef } from './arena-schema';
-import { MOVE_BUTTONS, MOVE_DIRECTIONS, type FighterDef, type ShapeDef } from './fighter-schema';
+import { MOVE_BUTTONS, type FighterDef, type ShapeDef } from './fighter-schema';
 
 const MAX_PHASES = 8;
 const MAX_MOVE_TICKS = 300;
@@ -154,16 +154,15 @@ export function validateFighter(def: FighterDef, abilities: readonly Ability[] =
   }
 
   // ---------------------------------------------------------------- moves
-  // Exactly six moves: one per attack button (A, B) × direction (neutral, back, forward).
+  // Exactly six moves: one per move button (1-6).
   const moves = Array.isArray(def.moves) ? def.moves : [];
-  const inputs = new Set<string>();
+  const inputs = new Set<number>();
   moves.forEach((m, i) => {
     const f = `moves[${i}] ("${m.name}")`;
     if (!MOVE_BUTTONS.includes(m.button)) r.err(`${f}.button`, `must be one of ${MOVE_BUTTONS.join(', ')}`);
-    if (!MOVE_DIRECTIONS.includes(m.direction)) r.err(`${f}.direction`, `must be one of ${MOVE_DIRECTIONS.join(', ')}`);
-    const key = `${m.direction} + ${m.button}`;
-    if (inputs.has(key)) r.err(`${f}`, `another move already uses ${key}`);
-    inputs.add(key);
+    if ('direction' in m) r.err(`${f}.direction`, 'moves no longer take a direction: each move has its own button (1-6)');
+    if (inputs.has(m.button)) r.err(`${f}.button`, `another move already uses button ${m.button}`);
+    inputs.add(m.button);
     if (!isStr(m.name)) r.err(`${f}.name`, 'must be a non-empty string');
     if (!isStr(m.description)) r.err(`${f}.description`, 'must be a non-empty string');
     r.range(`${f}.returnSpeed`, m.returnSpeed, 0.1, 100);
@@ -199,9 +198,8 @@ export function validateFighter(def: FighterDef, abilities: readonly Ability[] =
     if (total > MAX_MOVE_TICKS) r.err(`${f}.phases`, `total ticks must be at most ${MAX_MOVE_TICKS} (got ${total})`);
     if (phases.length && !anyTarget && !phases.some((ph) => ph.spin !== undefined || ph.drive !== undefined)) r.err(`${f}.phases`, 'must move something (joint targets, spin or drive)');
   });
-  for (const b of MOVE_BUTTONS)
-    for (const d of MOVE_DIRECTIONS) if (!inputs.has(`${d} + ${b}`)) r.err('moves', `missing a move for ${d} + ${b} (every fighter has exactly ${MOVE_BUTTONS.length * MOVE_DIRECTIONS.length} moves)`);
-  if (moves.length !== MOVE_BUTTONS.length * MOVE_DIRECTIONS.length) r.err('moves', `exactly ${MOVE_BUTTONS.length * MOVE_DIRECTIONS.length} moves are required (got ${moves.length})`);
+  for (const b of MOVE_BUTTONS) if (!inputs.has(b)) r.err('moves', `missing a move for button ${b} (every fighter has exactly ${MOVE_BUTTONS.length} moves)`);
+  if (moves.length !== MOVE_BUTTONS.length) r.err('moves', `exactly ${MOVE_BUTTONS.length} moves are required (got ${moves.length})`);
 
   // ---------------------------------------------------------------- locomotion
   const l = def.locomotion;

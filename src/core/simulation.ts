@@ -11,7 +11,7 @@ import { EventSink, type PartRef, type SimEvent } from './events';
 import { killPart, updateDebris } from './fighter';
 import { compileFighter } from './fighter-compile';
 import { ACTION_BUTTONS, EMPTY_INPUT, sanitizeInput, type InputFrame } from './input-frame';
-import { updateLocomotion, facingOf } from './locomotion';
+import { updateLocomotion } from './locomotion';
 import { endRound, startRound, tickCountdown, tickRoundEnd } from './match';
 import { activeDrive, activeSpin, updateJoints, updateMoves } from './moves';
 import { physicsReady, PhysicsWorld } from './physics';
@@ -207,8 +207,7 @@ export function step(s: SimState, rawInputs: readonly [InputFrame, InputFrame]):
     const input = fighting ? inputs[fi]! : EMPTY_INPUT;
     const f = g.fighters[fi]!;
     const cf = s.ctx.compiled[fi]!;
-    const facing = f.parts[cf.root]!.status === 'attached' ? facingOf(s, fi) : 0;
-    updateMoves(s, fi, input, facing, sink);
+    updateMoves(s, fi, input, sink);
     let actions = 0;
     ACTION_BUTTONS.forEach((bit, i) => {
       if (input.buttons & bit) actions |= 1 << i;

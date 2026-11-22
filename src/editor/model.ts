@@ -7,7 +7,7 @@
  * removes its subtree and everything that pointed at it).
  */
 import type { FighterBotHints, FighterDef, FighterVisuals, JointDef, MoveDef, PartDef, ShapeDef } from '../core/schema/fighter-schema';
-import { MOVE_BUTTONS, MOVE_DIRECTIONS } from '../core/schema/fighter-schema';
+import { MOVE_BUTTONS } from '../core/schema/fighter-schema';
 import { formatJson } from './json-format';
 
 export interface EditorDoc {
@@ -141,13 +141,13 @@ export function uniqueId(def: FighterDef, base: string, taken: (id: string) => b
   for (let n = 2; ; n++) if (!taken(`${base}_${n}`)) return `${base}_${n}`;
 }
 
-/** Index of the move for an input, or -1. */
-export function moveFor(def: FighterDef, button: MoveDef['button'], direction: MoveDef['direction']): number {
-  return def.moves.findIndex((m) => m.button === button && m.direction === direction);
+/** Index of the move for a move button, or -1. */
+export function moveFor(def: FighterDef, button: MoveDef['button']): number {
+  return def.moves.findIndex((m) => m.button === button);
 }
 
-/** Every input combination in display order (A, B, Back+A, Back+B, Fwd+A, Fwd+B). */
-export const MOVE_INPUTS = MOVE_DIRECTIONS.flatMap((direction) => MOVE_BUTTONS.map((button) => ({ button, direction })));
+/** Every move button in display order (1-6). */
+export const MOVE_INPUTS = MOVE_BUTTONS;
 
 // ------------------------------------------------------------------ edits
 

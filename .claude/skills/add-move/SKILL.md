@@ -1,21 +1,15 @@
 ---
 name: add-move
-description: Use when changing one of a Limb Clash fighter's six moves (button A/B + neutral/back/forward → a sequence of phases). Covers phases, targets, speeds, hold/spin/drive, requirements, testing in the sandbox and checking bot usage.
+description: Use when changing one of a Limb Clash fighter's six moves (move button 1-6 → a sequence of phases). Covers phases, targets, speeds, hold/spin/drive, requirements, testing in the sandbox and checking bot usage.
 ---
 
 # Change a move
 
-Every fighter has **exactly six moves**, one per input (validated):
-
-| Input | `button` | `direction` |
-| --- | --- | --- |
-| A | `A` | `neutral` |
-| B | `B` | `neutral` |
-| Back + A / Back + B | `A` / `B` | `back` |
-| Fwd + A / Fwd + B | `A` / `B` | `forward` |
-
-Direction is the movement stick at the moment of the press, relative to facing (sideways or no
-stick = `neutral`). You don't add moves, you replace one. Edit only the fighter's
+Every fighter has **exactly six moves**, one per move button (validated): `"button": 1` … `6`.
+The button alone picks the move — the movement stick only moves the fighter, so never design a
+move that relies on the stick (use a phase `drive` for lunges, hops and sidesteps). Default keys:
+P1 F G H / R T Y, P2 numpad 1–6 (J K L / U I O), gamepad X Y B LB RB RT (`src/input/bindings.ts`).
+You don't add moves, you replace one. Edit only the fighter's
 `src/content/fighters/<id>/fighter.json` (and its `bot.json` hints) — easiest in the **Fighter
 editor** (`npm run dev` → main menu, or `?editor=<id>`): select the move, edit its phases, ▶ Play it
 in the live preview; the ghost outline shows the selected phase's pose.

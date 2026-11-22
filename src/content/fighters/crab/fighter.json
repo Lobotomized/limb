@@ -329,8 +329,7 @@
   "corePart": "body",
   "moves": [
     {
-      "button": "A",
-      "direction": "neutral",
+      "button": 1,
       "name": "Snip flurry",
       "description": "Three quick pecks with the small claw.",
       "phases": [
@@ -379,8 +378,7 @@
       "requires": ["small_arm", "small_claw"]
     },
     {
-      "button": "B",
-      "direction": "neutral",
+      "button": 2,
       "name": "Crusher slam",
       "description": "Hold to draw the crusher out wide; release to slam it across the front.",
       "phases": [
@@ -408,8 +406,7 @@
       "requires": ["crusher_arm", "crusher"]
     },
     {
-      "button": "A",
-      "direction": "back",
+      "button": 3,
       "name": "Turtle snap",
       "description": "Hold to fold both claws over the front shell; release to fling them open.",
       "phases": [
@@ -440,8 +437,7 @@
       "requires": ["crusher_arm", "small_arm"]
     },
     {
-      "button": "B",
-      "direction": "back",
+      "button": 4,
       "name": "Sidle",
       "description": "Scuttle sideways to the right, then swing the crusher back across their flank.",
       "phases": [
@@ -476,8 +472,7 @@
       "requires": ["crusher_arm", "crusher"]
     },
     {
-      "button": "A",
-      "direction": "forward",
+      "button": 5,
       "name": "Shell ram",
       "description": "Brace, then ram with the front shell. Pushes them toward the edge.",
       "phases": [
@@ -496,8 +491,7 @@
       "requires": ["shell_front"]
     },
     {
-      "button": "B",
-      "direction": "forward",
+      "button": 6,
       "name": "Scissor pinch",
       "description": "Open both claws wide while stepping in, then snap them shut on whatever is between.",
       "phases": [

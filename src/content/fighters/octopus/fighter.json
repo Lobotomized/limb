@@ -473,8 +473,7 @@
   "corePart": "mantle",
   "moves": [
     {
-      "button": "A",
-      "direction": "neutral",
+      "button": 1,
       "name": "Lash flurry",
       "description": "The two front tentacles whip forward in turn.",
       "phases": [
@@ -525,8 +524,7 @@
       "requires": ["t0_base", "t7_base"]
     },
     {
-      "button": "B",
-      "direction": "neutral",
+      "button": 2,
       "name": "Coil crack",
       "description": "Hold to coil the front tentacles back; release to crack them forward.",
       "phases": [
@@ -561,8 +559,7 @@
       "requires": ["t0_base", "t7_base"]
     },
     {
-      "button": "A",
-      "direction": "back",
+      "button": 3,
       "name": "Jet retreat",
       "description": "Jet backwards with the front tentacles curled over the mantle.",
       "phases": [
@@ -584,8 +581,7 @@
       "requires": ["mantle"]
     },
     {
-      "button": "B",
-      "direction": "back",
+      "button": 4,
       "name": "Maelstrom",
       "description": "Spread all eight tentacles and spin. Hold to keep spinning.",
       "phases": [
@@ -625,8 +621,7 @@
       "requires": ["mantle"]
     },
     {
-      "button": "A",
-      "direction": "forward",
+      "button": 5,
       "name": "Spear dive",
       "description": "Sweep the side tentacles back and dive in, front tentacles first.",
       "phases": [
@@ -660,8 +655,7 @@
       "requires": ["t0_base", "t7_base"]
     },
     {
-      "button": "B",
-      "direction": "forward",
+      "button": 6,
       "name": "Embrace",
       "description": "Reach around with six tentacles while stepping in, then squeeze them shut.",
       "phases": [

@@ -193,8 +193,7 @@
   "corePart": "head",
   "moves": [
     {
-      "button": "A",
-      "direction": "neutral",
+      "button": 1,
       "name": "One-two",
       "description": "Left jab, then a right cross. Quick and safe.",
       "phases": [
@@ -228,8 +227,7 @@
       "requires": ["upper_arm_l", "forearm_l", "upper_arm_r", "forearm_r"]
     },
     {
-      "button": "B",
-      "direction": "neutral",
+      "button": 2,
       "name": "Haymaker",
       "description": "Hold to cock the right arm back; release to swing it across with the whole body.",
       "phases": [
@@ -251,8 +249,7 @@
       "requires": ["upper_arm_r", "forearm_r"]
     },
     {
-      "button": "A",
-      "direction": "back",
+      "button": 3,
       "name": "Cover & part",
       "description": "Hold to cover the head with both forearms; release to fling them apart and clear the way.",
       "phases": [
@@ -283,8 +280,7 @@
       "requires": ["upper_arm_l", "forearm_l", "upper_arm_r", "forearm_r"]
     },
     {
-      "button": "B",
-      "direction": "back",
+      "button": 4,
       "name": "Slip & counter",
       "description": "Hop back out of reach behind a left guard, then step in with a right hook.",
       "phases": [
@@ -310,8 +306,7 @@
       "requires": ["upper_arm_r", "forearm_r", "forearm_l"]
     },
     {
-      "button": "A",
-      "direction": "forward",
+      "button": 5,
       "name": "Lunging palms",
       "description": "Gather behind both forearms, then lunge in and thrust both palms. Shoves them toward the edge.",
       "phases": [
@@ -342,8 +337,7 @@
       "requires": ["upper_arm_l", "forearm_l", "upper_arm_r", "forearm_r"]
     },
     {
-      "button": "B",
-      "direction": "forward",
+      "button": 6,
       "name": "Whirlwind",
       "description": "Step in and spin a full turn with both arms flung out. Hits everything around.",
       "phases": [

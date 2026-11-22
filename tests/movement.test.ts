@@ -2,7 +2,7 @@
 // losing locomotion parts reduces speed.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BIG_BOX, input, jointAngle, newMatch, partIndex, rootSpeed, run, setup } from './helpers';
-import { AimMode, ATTACK_BUTTONS, Button } from '../src/core/input-frame';
+import { AimMode, Button, moveButtonBit } from '../src/core/input-frame';
 import { MOVE_BUTTONS } from '../src/core/schema/fighter-schema';
 import { step } from '../src/core/simulation';
 import { facingOf, locomotionShare } from '../src/core/locomotion';
@@ -61,10 +61,9 @@ describe.each(FIGHTERS)('%s movement', (id) => {
       const s = newMatch({ a: id, b: id, arena: BIG_BOX });
       const cf = s.ctx.compiled[0];
       const face = facingOf(s, 0);
-      const sign = m.direction === 'forward' ? 1 : m.direction === 'back' ? -1 : 0;
-      expect(resolveMove(cf, m.button, m.direction)).toBe(mi);
+      expect(resolveMove(cf, m.button)).toBe(mi);
       const cm = cf.moves[mi]!;
-      // Hold the button through the first hold phase (plus a little), stick only on the press tick.
+      // Hold the button through the first hold phase (plus a little); the stick stays centered.
       let holdTicks = 0;
       for (const p of cm.phases) {
         holdTicks += p.ticks;
@@ -86,7 +85,7 @@ describe.each(FIGHTERS)('%s movement', (id) => {
       for (let k = 0; k < 400; k++) {
         const tk = s.game.tick;
         const ev = step(s, [
-          input({ moveX: tk === startTick ? Math.round(sign * cos(face) * 127) : 0, moveY: tk === startTick ? Math.round(sign * sin(face) * 127) : 0, buttons: tk - startTick < holdTicks ? ATTACK_BUTTONS[MOVE_BUTTONS.indexOf(m.button)] : 0, aimMode: spins ? AimMode.AUTO : AimMode.VECTOR, aimX: Math.round(cos(face) * 127), aimY: Math.round(sin(face) * 127) }),
+          input({ buttons: tk - startTick < holdTicks ? moveButtonBit(m.button) : 0, aimMode: spins ? AimMode.AUTO : AimMode.VECTOR, aimX: Math.round(cos(face) * 127), aimY: Math.round(sin(face) * 127) }),
           input({}),
         ]);
         if (ev.some((e) => e.type === 'moveStarted' && e.move === mi)) started = true;
@@ -130,25 +129,27 @@ describe.each(FIGHTERS)('%s movement', (id) => {
     });
   });
 
-  it('stick direction relative to facing picks the move; sideways counts as neutral', () => {
+  it('each button picks its own move; the stick direction never changes which move starts', () => {
     const s = newMatch({ a: id, b: id, arena: BIG_BOX });
     const cf = s.ctx.compiled[0];
     const face = facingOf(s, 0);
+    let bit = 0;
     const press = (dx: number, dy: number): number => {
       const x = dx * cos(face) - dy * sin(face);
       const y = dx * sin(face) + dy * cos(face);
-      const ev = run(s, 1, () => [input({ moveX: Math.round(x * 127), moveY: Math.round(y * 127), buttons: Button.ATTACK_B }), input({})]);
+      const ev = run(s, 1, () => [input({ moveX: Math.round(x * 127), moveY: Math.round(y * 127), buttons: bit }), input({})]);
       const st = ev.find((e) => e.type === 'moveStarted');
       // Cancel the move so the next press starts fresh.
       s.game.fighters[0]!.action.move = -1;
       run(s, 1, () => [input({}), input({})]);
       return st && st.type === 'moveStarted' ? st.move : -2;
     };
-    expect(press(1, 0)).toBe(resolveMove(cf, 'B', 'forward'));
-    expect(press(-1, 0)).toBe(resolveMove(cf, 'B', 'back'));
-    expect(press(0, 1)).toBe(resolveMove(cf, 'B', 'neutral'));
-    expect(press(0, 0)).toBe(resolveMove(cf, 'B', 'neutral'));
-    expect(press(0.7, 0.7)).toBe(resolveMove(cf, 'B', 'forward'));
+    for (const b of MOVE_BUTTONS) {
+      bit = moveButtonBit(b);
+      const want = resolveMove(cf, b);
+      expect(want).toBeGreaterThanOrEqual(0);
+      for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0.7, 0.7]] as const) expect(press(dx, dy), `button ${b}, stick (${dx}, ${dy})`).toBe(want);
+    }
   });
 
   it('losing locomotion parts reduces speed', () => {

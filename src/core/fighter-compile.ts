@@ -2,7 +2,7 @@
  * Precomputed index structures for a (validated) fighter definition: id -> index maps,
  * the part tree, resolved move targets. Built once per match, never serialized.
  */
-import type { FighterDef, MoveButton, MoveDirection } from './schema/fighter-schema';
+import { MOVE_BUTTONS, type FighterDef, type MoveButton } from './schema/fighter-schema';
 
 export interface CompiledPhase {
   /** Accumulated targets: everything this phase and earlier phases of the move set (later wins). */
@@ -17,7 +17,6 @@ export interface CompiledPhase {
 export interface CompiledMove {
   index: number;
   button: MoveButton;
-  direction: MoveDirection;
   phases: CompiledPhase[];
   /** Every joint any phase touches. */
   joints: number[];
@@ -26,8 +25,6 @@ export interface CompiledMove {
   returnSpeed: number;
   requires: number[];
 }
-
-export const moveKey = (button: MoveButton, dir: MoveDirection): string => `${button}/${dir}`;
 
 export interface CompiledFighter {
   def: FighterDef;
@@ -46,8 +43,8 @@ export interface CompiledFighter {
   jointParent: number[];
   jointChild: number[];
   moves: CompiledMove[];
-  /** moveByInput[moveKey(button, direction)] = move index. */
-  moveByInput: Map<string, number>;
+  /** moveByButton[button - 1] = move index (-1 if no move uses that button). */
+  moveByButton: number[];
   locomotionParts: number[];
   totalMass: number;
   totalHealth: number;
@@ -104,7 +101,6 @@ export function compileFighter(def: FighterDef): CompiledFighter {
     return {
       index: i,
       button: m.button,
-      direction: m.direction,
       phases,
       joints: [...acc.keys()].sort((x, y) => x - y),
       totalTicks: m.phases.reduce((a, p) => a + p.ticks, 0),
@@ -112,11 +108,7 @@ export function compileFighter(def: FighterDef): CompiledFighter {
       requires: m.requires.map((r) => idx(partIndex, r, 'part')),
     };
   });
-  const moveByInput = new Map<string, number>();
-  for (const m of moves) {
-    const k = moveKey(m.button, m.direction);
-    if (!moveByInput.has(k)) moveByInput.set(k, m.index);
-  }
+  const moveByButton = MOVE_BUTTONS.map((b) => moves.find((m) => m.button === b)?.index ?? -1);
   const locomotionParts = def.parts.flatMap((p, i) => (p.tags?.includes('locomotion') ? [i] : []));
   return {
     def,
@@ -131,7 +123,7 @@ export function compileFighter(def: FighterDef): CompiledFighter {
     jointParent,
     jointChild,
     moves,
-    moveByInput,
+    moveByButton,
     locomotionParts,
     totalMass: def.parts.reduce((a, p) => a + p.mass, 0),
     totalHealth: def.parts.reduce((a, p) => a + p.maxHealth, 0),

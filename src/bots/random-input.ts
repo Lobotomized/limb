@@ -2,7 +2,7 @@
  * Seeded random input generator for determinism and netcode tests. Inputs change every
  * few ticks (like a mashing player), so moves, dashes and turns all get exercised.
  */
-import { AimMode, type InputFrame } from '../core/input-frame';
+import { AimMode, BUTTON_MASK, type InputFrame } from '../core/input-frame';
 import { Rng } from '../core/rng';
 
 export class RandomInputs {
@@ -23,7 +23,7 @@ export class RandomInputs {
       aimX: r.int(-127, 127),
       aimY: r.int(-127, 127),
       aimMode: r.pick([AimMode.AUTO, AimMode.AUTO, AimMode.VECTOR, AimMode.TURN_LEFT, AimMode.TURN_RIGHT]),
-      buttons: r.int(0, 127) & r.int(0, 127),
+      buttons: r.int(0, BUTTON_MASK) & r.int(0, BUTTON_MASK),
     };
   }
 
