@@ -4,16 +4,16 @@
  * The format already carries two spare `action` buttons for future abilities.
  */
 export const Button = {
-  SLOT1: 1 << 0,
-  SLOT2: 1 << 1,
-  SLOT3: 1 << 2,
-  SLOT4: 1 << 3,
+  /** Attack buttons. Bits 2-3 are unused (reserved). */
+  ATTACK_A: 1 << 0,
+  ATTACK_B: 1 << 1,
   DASH: 1 << 4,
   ACTION1: 1 << 5,
   ACTION2: 1 << 6,
 } as const;
 
-export const SLOT_BUTTONS = [Button.SLOT1, Button.SLOT2, Button.SLOT3, Button.SLOT4] as const;
+/** Attack button bits in MOVE_BUTTONS order (A, B). */
+export const ATTACK_BUTTONS = [Button.ATTACK_A, Button.ATTACK_B] as const;
 export const ACTION_BUTTONS = [Button.ACTION1, Button.ACTION2] as const;
 
 /** How facing is controlled this tick. */

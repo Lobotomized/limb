@@ -4,7 +4,7 @@
  *
  * Wire format per frame (6 bytes): moveX i8, moveY i8, aimX i8, aimY i8, aimMode u8, buttons u8.
  */
-export { AimMode, Button, SLOT_BUTTONS, ACTION_BUTTONS, EMPTY_INPUT, emptyInput, inputsEqual, quantizeAxis, type InputFrame } from '../core/input-frame';
+export { AimMode, Button, ATTACK_BUTTONS, ACTION_BUTTONS, EMPTY_INPUT, emptyInput, inputsEqual, quantizeAxis, type InputFrame } from '../core/input-frame';
 import type { InputFrame } from '../core/input-frame';
 
 export const INPUT_BYTES = 6;

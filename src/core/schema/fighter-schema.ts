@@ -44,34 +44,56 @@ export interface JointDef {
   idleAngle: number;
 }
 
-export interface SlotDef {
-  /** 1..4, matches the input button. */
-  id: number;
-  name: string;
-  /** Parts this slot drives (used by the HUD move list and bots). */
-  parts: string[];
+/** The two attack buttons. Every fighter has exactly six moves: A/B × neutral/back/forward. */
+export type MoveButton = 'A' | 'B';
+export const MOVE_BUTTONS: readonly MoveButton[] = ['A', 'B'];
+
+/** Movement-stick direction when the button is pressed, relative to facing. Sideways counts as neutral. */
+export type MoveDirection = 'neutral' | 'back' | 'forward';
+export const MOVE_DIRECTIONS: readonly MoveDirection[] = ['neutral', 'back', 'forward'];
+
+/**
+ * One step of a move. Phases run in order; each one retargets some joints and may spin or
+ * drive the body. A move is still only motion of the fighter's own parts (rule 6).
+ */
+export interface MovePhase {
+  /**
+   * Joint targets set in this phase. Joints not listed keep the target an earlier phase of the
+   * same move gave them (or stay at idle).
+   */
+  targets: { joint: string; angle: number }[];
+  /** Radians per second this phase's targets travel toward their angles. */
+  speed: number;
+  /** Ticks (1/60 s) the phase lasts. */
+  ticks: number;
+  /**
+   * Optional: after `ticks`, the phase keeps going while the button is still held (a guard, a
+   * cocked swing, a held spin), up to `maxHoldTicks` more (default: tuning `moveMaxHoldTicks`).
+   * Releasing moves on to the next phase.
+   */
+  hold?: boolean;
+  maxHoldTicks?: number;
+  /** Optional: the root spins at this angular velocity (rad/s, + = counter-clockwise) instead of turning toward the aim. */
+  spin?: number;
+  /**
+   * Optional: the root is driven at this velocity (m/s) in the fighter's own frame: [forward, left].
+   * Replaces walking for the phase; scales with surviving locomotion parts like walking does.
+   */
+  drive?: [number, number];
 }
 
-export type MoveDirection = 'neutral' | 'up' | 'down' | 'forward' | 'back';
-export const MOVE_DIRECTIONS: readonly MoveDirection[] = ['neutral', 'forward', 'back', 'up', 'down'];
-
 export interface MoveDef {
-  slot: number;
-  /** Relative to facing: forward/back, up = fighter's left side, down = right side. */
+  /** Input: attack button + stick direction (relative to facing) at the moment of the press. */
+  button: MoveButton;
   direction: MoveDirection;
   name: string;
-  targets: { joint: string; angle: number }[];
-  /** Radians per second the motor targets travel toward the move pose. */
-  speed: number;
-  /** Radians per second back to the idle pose after release. */
+  /** One short line shown in the move list. */
+  description: string;
+  phases: MovePhase[];
+  /** Radians per second back to the idle pose after the move ends. */
   returnSpeed: number;
   /** Parts that must be alive (and attached) for the move to be usable. */
   requires: string[];
-  /**
-   * Optional: while held, the root spins at this angular velocity (rad/s, + = counter-clockwise)
-   * instead of turning toward the aim. A generic building block for spin/turn moves.
-   */
-  spin?: number;
 }
 
 export interface LocomotionDef {
@@ -95,7 +117,7 @@ export interface FighterDef {
   joints: JointDef[];
   rootPart: string;
   corePart: string;
-  slots: SlotDef[];
+  /** Exactly six moves, one per button (A, B) × direction (neutral, back, forward). */
   moves: MoveDef[];
   locomotion: LocomotionDef;
   /** Extra fighter-level fields added by abilities, keyed by ability id. */
