@@ -22,9 +22,9 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 13. Humanoid fighter
 
 ## Phase 4: Combat rules
-- [ ] 14. damage.ts + tuning.ts
-- [ ] 15. match.ts
-- [ ] 16. Default arena
+- [x] 14. damage.ts + tuning.ts
+- [x] 15. match.ts
+- [x] 16. Default arena
 
 ## Phase 5: Extendability
 - [ ] 17. Abilities interface, registry, dummy-ability test

@@ -85,3 +85,12 @@ export function rootSpeed(s: SimState, fighter: number): number {
   const v = s.physics.velocity(s.game.fighters[fighter]!.parts[cf.root]!.body);
   return Math.sqrt(v.vx * v.vx + v.vy * v.vy);
 }
+
+/** Moves every attached part of a fighter by (dx, dy), zeroing velocities. */
+export function translateFighter(s: SimState, fighter: number, dx: number, dy: number): void {
+  for (const p of s.game.fighters[fighter]!.parts) {
+    if (p.body < 0) continue;
+    const pose = s.physics.pose(p.body);
+    s.physics.setPose(p.body, pose.x + dx, pose.y + dy, pose.angle);
+  }
+}
