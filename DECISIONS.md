@@ -65,3 +65,4 @@ Known balancing issue left for the human: octopus mirrors are long (mantle-on-ma
 - Pixi, Rapier and fonts are devDependencies (bundled by Vite); runtime dependencies are only what the Electron main process or the server needs (steamworks.js, ws) — smaller packaged app.
 - `npm run dist` builds for the current OS only (AppImage + unpacked dir on Linux, NSIS on Windows, DMG on macOS); electron-builder publishing is disabled because builds go to Steam.
 - The Electron window background color is a literal `#111318` (bg-900) in `electron/main.cjs` — the main process can't import the TypeScript theme; it only shows before the page paints.
+- add-fighter walkthrough (Phase 12): a throwaway fighter `zz-walkthrough` was added in its own folder; validation, movement, pairing and bot tests picked it up automatically, `sim:bots` ran it against every fighter, and `git status` showed zero changes outside the folder. It was then deleted.

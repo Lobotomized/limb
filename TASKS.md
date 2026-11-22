@@ -65,9 +65,9 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 40. STEAM.md
 
 ## Phase 12: Harness and docs
-- [ ] 41. Final CLAUDE.md
-- [ ] 42. Six skills + throwaway-fighter walkthrough
-- [ ] 43. README.md
+- [x] 41. Final CLAUDE.md
+- [x] 42. Six skills + throwaway-fighter walkthrough
+- [x] 43. README.md
 
 ## Phase 13: Final verification
 - [ ] 44. npm run check
