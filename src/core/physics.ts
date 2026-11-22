@@ -168,11 +168,9 @@ export class PhysicsWorld {
   /** Revolute joint with a position motor. Anchors are in each body's local space. */
   createRevolute(parentBody: number, childBody: number, anchorParent: Vec2, anchorChild: Vec2, limits?: [number, number]): number {
     const data = RAPIER.JointData.revolute(new RAPIER.Vector2(anchorParent.x, anchorParent.y), new RAPIER.Vector2(anchorChild.x, anchorChild.y));
-    if (limits) {
-      data.limitsEnabled = true;
-      data.limits = [limits[0], limits[1]];
-    }
     const j = this.world.createImpulseJoint(data, this.world.getRigidBody(parentBody), this.world.getRigidBody(childBody), true) as RAPIER.RevoluteImpulseJoint;
+    // Rapier ignores JointData.limits for revolute joints; limits must be set on the created joint.
+    if (limits) j.setLimits(limits[0], limits[1]);
     j.setContactsEnabled(false);
     j.configureMotorModel(RAPIER.MotorModel.ForceBased);
     return j.handle;

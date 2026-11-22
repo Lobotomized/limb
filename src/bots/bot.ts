@@ -237,6 +237,10 @@ const RAM_AFTER_TICKS = 300;
 const PROGRESS_HEALTH = 10;
 const NO_PROGRESS_TICKS = 900;
 const RAM_TICKS = 120;
+/** Ramming closer than this (m, root to enemy core) backs off for a run-up every cycle. */
+const RAM_RUNUP_DIST = 1.0;
+const RAM_CYCLE_TICKS = 90;
+const RAM_BACKOFF_TICKS = 30;
 /** Moves whose drive would end closer than this (m) to our own ring-out edge are skipped. */
 const SAFE_EDGE = 1.0;
 
@@ -422,8 +426,12 @@ export function botInput(s: SimState, fi: number, mem: BotMemory, rng: Rng, diff
     const radial = clamp((dist - ideal) / 0.6, -0.7, 0.7);
     mv = { x: -dirOpp.y * mem.strafeSign * 0.9 + dirOpp.x * radial, y: dirOpp.x * mem.strafeSign * 0.9 + dirOpp.y * radial };
   } else if (mem.mode === 'ram') {
-    // No usable attack: charge body-first through the opponent's core.
-    mv = dirOpp;
+    // Charge body-first through the opponent's core. With no usable attack left at all, pushing
+    // at point-blank range deals no damage (no closing speed) and two limbless fighters would
+    // stall forever, so back off now and then for a run-up.
+    const noAttacks = !model.moves.some((m) => m.isAttack && moveAvailable(me, cf, m.index));
+    const backOff = noAttacks && dist < RAM_RUNUP_DIST && g.tick % RAM_CYCLE_TICKS < RAM_BACKOFF_TICKS;
+    mv = backOff ? { x: -dirOpp.x, y: -dirOpp.y } : dirOpp;
   } else {
     mv = { x: -dirOpp.x, y: -dirOpp.y };
   }

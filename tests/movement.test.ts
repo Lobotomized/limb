@@ -80,6 +80,9 @@ describe.each(FIGHTERS)('%s movement', (id) => {
       const best = cm.phases.map((p) => new Map(p.targets.map((t) => [t.joint, Infinity])));
       const seen: number[] = [];
       let started = false;
+      // Worst joint-limit overshoot during the move (a violent move can wrench a joint through ±π).
+      let overshoot = 0;
+      let overshootJoint = '';
       for (let k = 0; k < 400; k++) {
         const tk = s.game.tick;
         const ev = step(s, [
@@ -97,11 +100,21 @@ describe.each(FIGHTERS)('%s movement', (id) => {
             const err = Math.abs(angleDiff(jointAngle(s, 0, def.joints[t.joint]!.id), t.angle));
             best[ph]!.set(t.joint, Math.min(best[ph]!.get(t.joint)!, err));
           }
+        def.joints.forEach((j) => {
+          if (!j.limits) return;
+          const ang = jointAngle(s, 0, j.id);
+          const o = Math.max(j.limits[0] - ang, ang - j.limits[1]);
+          if (o > overshoot) {
+            overshoot = o;
+            overshootJoint = j.id;
+          }
+        });
         if (started && a.move < 0 && k > 3) break;
       }
       expect(started, `${m.name} started`).toBe(true);
       expect(s.game.fighters[0]!.action.move, `${m.name} ended`).toBe(-1);
       expect(new Set(seen).size, `${m.name} went through every phase`).toBe(cm.phases.length);
+      expect.soft(overshoot, `${m.name}: joint ${overshootJoint} overshoots its limits by ${overshoot.toFixed(2)} rad`).toBeLessThan(0.5);
       best.forEach((errs, ph) =>
         errs.forEach((err, j) => expect.soft(err, `${m.name} phase ${ph}: joint ${def.joints[j]!.id} best error ${err.toFixed(2)}`).toBeLessThan(0.5)),
       );

@@ -1,0 +1,7 @@
+{
+  "attackMoves": ["Strike", "Tail lash", "Death roll", "Constrict"],
+  "guardMoves": ["Coil & lash"],
+  "idealDistance": 1.7,
+  "shieldParts": ["head", "fore_body"],
+  "reach": 1.6
+}
