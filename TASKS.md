@@ -27,8 +27,8 @@ Status: [ ] todo · [~] in progress · [x] done
 - [x] 16. Default arena
 
 ## Phase 5: Extendability
-- [ ] 17. Abilities interface, registry, dummy-ability test
-- [ ] 18. Spare input action slots
+- [x] 17. Abilities interface, registry, dummy-ability test
+- [x] 18. Spare input action slots
 
 ## Phase 6: Input and local play
 - [ ] 19. InputFrame, keyboard, gamepad, bindings
